@@ -6,8 +6,9 @@
 //
 
 import UIKit
+import CoreLocation
 
-class OnboardViewController: UIViewController {
+class OnboardViewController: UIViewController, CLLocationManagerDelegate {
     
     private let commonColor = UIColor(red: 0.13, green: 0.31, blue: 0.78, alpha: 1.00)
     private let commontFont = "Rubik-Regular"
@@ -18,6 +19,8 @@ class OnboardViewController: UIViewController {
     private let imageView = UIImageView()
     private let allowLocationButton = UIButton()
     private let rejectLocationButton = UIButton()
+    
+    private var locationManager: CLLocationManager?
     
     private lazy var scrollView: UIScrollView = {
        let scroll = UIScrollView()
@@ -36,7 +39,20 @@ class OnboardViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = commonColor
+        
+        locationManager = CLLocationManager()
+        locationManager?.delegate = self
     }
+    
+//    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+//        if status == .authorizedAlways {
+//            if CLLocationManager.isMonitoringAvailable(for: CLBeaconRegion.self) {
+//                if CLLocationManager.isRangingAvailable() {
+//                    // do stuff
+//                }
+//            }
+//        }
+//    }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -84,13 +100,10 @@ class OnboardViewController: UIViewController {
         let image = UIImage(named: imageName)
 
         imageView.image = image;
-        var width: CGFloat = 150
-        var height: CGFloat = 300
+        imageView.contentMode = .scaleAspectFit
         
         switch UIDevice.current.userInterfaceIdiom {
         case .pad:
-            width = width*2
-            height = height*2
             print("Мы на pad")
         case .unspecified:
             print("Мы на unspecified")
@@ -107,10 +120,8 @@ class OnboardViewController: UIViewController {
         }
 
         imageView.toAutoLayout()
-        imageView.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 100).isActive = true
+        imageView.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 50).isActive = true
         imageView.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor, constant: 0.0).isActive = true
-        imageView.widthAnchor.constraint(equalToConstant: width).isActive = true
-        imageView.heightAnchor.constraint(equalToConstant: height).isActive = true
     }
     
     private func configureTextLabels() {
@@ -176,7 +187,20 @@ class OnboardViewController: UIViewController {
     }
     
     @objc func allowButtonClicked() {
-        print("Дали разрешение на локацию")
+        print("Запрашиваем разрешение на локацию")
+        Core.shared.setIsNotNewUser()
+        locationManager?.requestAlwaysAuthorization()
+        let vc = WeatherViewController()
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: false, completion: nil)
+    }
+    
+    @objc func rejectButtonClicked() {
+        print("Не нужно разрешение на локацию")
+        Core.shared.setIsNotNewUser()
+        let vc = WeatherViewController()
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: false, completion: nil)
     }
     
     private func configureRejectButtonLocation() {
@@ -187,15 +211,10 @@ class OnboardViewController: UIViewController {
         rejectLocationButton.addTarget(self, action: #selector(rejectButtonClicked), for:.touchUpInside)
 
         rejectLocationButton.toAutoLayout()
-//        rejectLocationButton.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 36).isActive = true
         rejectLocationButton.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -17).isActive = true
         rejectLocationButton.topAnchor.constraint(equalTo: allowLocationButton.bottomAnchor, constant: 30).isActive = true
         rejectLocationButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
         rejectLocationButton.widthAnchor.constraint(equalToConstant: 200).isActive = true
-    }
-    
-    @objc func rejectButtonClicked() {
-        print("Не дали разрешение на локацию")
     }
 }
 
@@ -208,6 +227,7 @@ class Core {
     
     func setIsNotNewUser() {
         UserDefaults.standard.set(true, forKey: "isNewUser")
+        print("Онбординга больше не будет")
     }
 }
 
