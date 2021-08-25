@@ -17,11 +17,16 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
     private let WEATHER_URL_HOURLY = "http://api.openweathermap.org/data/2.5/forecast/hourly"
     private let WEATHER_URL_MOUNTH = "http://api.openweathermap.org/data/2.5/forecast/climate"
     private let api_key = "d1706e13c1806a01f0e2155432f125a8"
-    private var center: CGFloat = 0.0
     
     private let locationManager = CLLocationManager()
     
     private let weatherDataModel = WeatherDatamodel()
+    
+    private let temperatureTable = UITableView(frame: .zero, style: .grouped)
+    
+    private var reuseId: String {
+        String(describing: DayWithTemperature.self)
+    }
     
     private lazy var temperatureLabel: UILabel = {
         let label = UILabel()
@@ -159,6 +164,20 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
        return pageControl
     }()
     
+    lazy var dailyLabel: UILabel = {
+        let label = UILabel()
+        label.frame = CGRect(x: 0, y: 0, width: 200, height: 22)
+        label.backgroundColor = .white
+        label.textColor = UIColor(red: 0.154, green: 0.152, blue: 0.135, alpha: 1)
+        label.font = UIFont(name: "Rubik-Medium", size: 18)
+
+        var paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineHeightMultiple = 1.03
+        
+        label.attributedText = NSMutableAttributedString(string: "Ежедневный прогноз", attributes: [NSAttributedString.Key.kern: 0.36, NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        return label
+    }()
+    
     private lazy var moreFor24Hours: UILabel = {
         let label = UILabel()
         label.frame = CGRect(x: 0, y: 0, width: 174, height: 20)
@@ -176,11 +195,17 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        center = view.frame.width / 2
 
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         locationManager.startUpdatingLocation()
+        
+        temperatureTable.toAutoLayout()
+        temperatureTable.register(DayWithTemperature.self, forCellReuseIdentifier: reuseId)
+        temperatureTable.dataSource = self
+        temperatureTable.rowHeight = UITableView.automaticDimension
+        temperatureTable.estimatedRowHeight = 250
+        temperatureTable.allowsSelection = false
 
         view.backgroundColor = .white
         
@@ -202,6 +227,8 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         
         scrollViewContainer.addSubview(moreFor24Hours)
         scrollViewContainer.addSubview(hourlyCollectionView)
+        scrollViewContainer.addSubview(dailyLabel)
+        scrollViewContainer.addSubview(temperatureTable)
         
         configureScroll()
         setupLayout()
@@ -232,7 +259,7 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         
         cityLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(scrollView).offset(40)
-            make.centerX.equalTo(center)
+            make.centerX.equalTo(scrollView)
             make.height.equalTo(22)
         }
         
@@ -319,6 +346,19 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
             make.top.equalTo(moreFor24Hours.snp.bottom).offset(10)
             make.width.equalTo(scrollView)
             make.height.equalTo(85)
+        }
+        
+        dailyLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(hourlyCollectionView.snp.bottom).offset(30)
+            make.leading.equalTo(scrollView).offset(16)
+            make.height.equalTo(22)
+        }
+        
+        temperatureTable.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(dailyLabel.snp.bottom).offset(10)
+            make.leading.equalTo(scrollView).offset(16)
+            make.trailing.equalTo(scrollView).offset(-16)
+            make.bottom.equalTo(view)
         }
     }
     
@@ -543,16 +583,25 @@ extension WeatherViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: 42, height: 80)
     }
-//
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-//        return 15
-//    }
-//
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-//        return baseOffset
-//    }
-//
+
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
+    }
+}
+
+extension WeatherViewController: UITableViewDataSource {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 30
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell: DayWithTemperature = tableView.dequeueReusableCell(withIdentifier: reuseId, for: indexPath) as! DayWithTemperature
+        cell.configure(description: "Неясная влажность", data: "18/12", humidity: 123, temperature: 24)
+        return cell
     }
 }

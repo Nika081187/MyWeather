@@ -77,10 +77,6 @@ class HourlyCollectionViewCell: UICollectionViewCell {
         
         containerView.snp.makeConstraints { (make) -> Void in
             make.edges.equalTo(contentView)
-//            make.bottom.equalTo(contentView)
-//            make.centerX.equalTo(containerView)
-//            make.height.equalTo(83)
-//            make.width.equalTo(42)
         }
         
         hourLabel.snp.makeConstraints { (make) -> Void in
