@@ -30,7 +30,7 @@ class HourlyCollectionViewCell: UICollectionViewCell {
     lazy var temperatureLabel: UILabel = {
         let label = UILabel()
         label.text = ""
-        label.font = UIFont.boldSystemFont(ofSize: 18)
+        label.font = UIFont.systemFont(ofSize: 10)
         label.textColor = .white
         label.toAutoLayout()
         return label
@@ -39,13 +39,21 @@ class HourlyCollectionViewCell: UICollectionViewCell {
     lazy var hourLabel: UILabel = {
         let label = UILabel()
         label.text = ""
-        label.font = UIFont.boldSystemFont(ofSize: 18)
-        label.textColor = .white
+        label.backgroundColor = .white
+        label.textColor = UIColor(red: 0.613, green: 0.592, blue: 0.592, alpha: 1)
+        label.font = UIFont.systemFont(ofSize: 10)
+
+        var paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineHeightMultiple = 1.27
+
+        label.textAlignment = .right
+        label.attributedText = NSMutableAttributedString(string: "21:00", attributes: [NSAttributedString.Key.kern: 0.24, NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        
         label.toAutoLayout()
         return label
     }()
     
-    public func configure(image: UIImage, temperature: Int, hour: Date){
+    public func configure(image: UIImage, temperature: Int, hour: String){
         weatherImage.image = image
         temperatureLabel.text = "\(temperature)"
         hourLabel.text = "\(hour)"
@@ -62,36 +70,38 @@ class HourlyCollectionViewCell: UICollectionViewCell {
     
     func setupLayout() {
         addSubview(contentView)
+        contentView.addSubview(containerView)
         contentView.addSubview(weatherImage)
         contentView.addSubview(temperatureLabel)
         contentView.addSubview(hourLabel)
-        contentView.addSubview(containerView)
         
         containerView.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(contentView)
-            make.height.equalTo(83)
-            make.width.equalTo(42)
+            make.edges.equalTo(contentView)
+//            make.bottom.equalTo(contentView)
+//            make.centerX.equalTo(containerView)
+//            make.height.equalTo(83)
+//            make.width.equalTo(42)
         }
         
         hourLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(containerView.snp.bottom).offset(2)
+            make.top.equalTo(containerView).offset(10)
             make.centerX.equalTo(containerView)
-            make.height.equalTo(32)
-            make.width.equalTo(18)
+            make.height.equalTo(20)
+            make.width.equalTo(20)
         }
         
         weatherImage.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(hourLabel.snp.bottom).offset(2)
             make.centerX.equalTo(containerView)
-            make.height.equalTo(32)
-            make.width.equalTo(18)
+            make.height.equalTo(20)
+            make.width.equalTo(20)
         }
         
         temperatureLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(weatherImage.snp.bottom).offset(2)
             make.centerX.equalTo(containerView)
-            make.height.equalTo(32)
-            make.width.equalTo(18)
+            make.height.equalTo(20)
+            make.width.equalTo(20)
         }
     }
 }

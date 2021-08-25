@@ -13,17 +13,17 @@ import SwiftyJSON
 
 class WeatherViewController: UITabBarController, CLLocationManagerDelegate, ChangeCityDelegate {
     
-    let WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather"
-    let WEATHER_URL_HOURLY = "http://api.openweathermap.org/data/2.5/forecast/hourly"
-    let WEATHER_URL_MOUNTH = "http://api.openweathermap.org/data/2.5/forecast/climate"
-    let api_key = "d1706e13c1806a01f0e2155432f125a8"
+    private let WEATHER_URL_ONE_DAY = "http://api.openweathermap.org/data/2.5/weather"
+    private let WEATHER_URL_HOURLY = "http://api.openweathermap.org/data/2.5/forecast/hourly"
+    private let WEATHER_URL_MOUNTH = "http://api.openweathermap.org/data/2.5/forecast/climate"
+    private let api_key = "d1706e13c1806a01f0e2155432f125a8"
     private var center: CGFloat = 0.0
     
-    let locationManager = CLLocationManager()
+    private let locationManager = CLLocationManager()
     
-    let weatherDataModel = WeatherDatamodel()
+    private let weatherDataModel = WeatherDatamodel()
     
-    lazy var temperatureLabel: UILabel = {
+    private lazy var temperatureLabel: UILabel = {
         let label = UILabel()
         label.text = ""
         label.font = UIFont.boldSystemFont(ofSize: 36)
@@ -32,7 +32,7 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         return label
     }()
     
-    lazy var cityLabel: UILabel = {
+    private lazy var cityLabel: UILabel = {
         let label = UILabel()
         label.text = ""
         label.font = UIFont.boldSystemFont(ofSize: 18)
@@ -40,7 +40,7 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         return label
     }()
     
-    lazy var temperatureDescription: UILabel = {
+    private lazy var temperatureDescription: UILabel = {
         let label = UILabel()
         label.text = ""
         label.textColor = .white
@@ -49,7 +49,7 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         return label
     }()
     
-    let sunsetImage: UIImageView = {
+    private let sunsetImage: UIImageView = {
         let theImageView = UIImageView()
         theImageView.image = UIImage(systemName: "sunset")
         theImageView.tintColor = .yellow
@@ -57,7 +57,7 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         return theImageView
     }()
     
-    let sunriseImage: UIImageView = {
+    private let sunriseImage: UIImageView = {
         let theImageView = UIImageView()
         theImageView.image = UIImage(systemName: "sunrise")
         theImageView.tintColor = .yellow
@@ -146,9 +146,32 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         cv.register(HourlyCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: HourlyCollectionViewCell.self))
         cv.dataSource = self
         cv.delegate = self
+        cv.showsHorizontalScrollIndicator = false
         cv.backgroundColor = .white
         cv.toAutoLayout()
         return cv
+    }()
+    
+    private lazy var pageControl: UIPageControl = {
+       let pageControl = UIPageControl()
+       pageControl.pageIndicatorTintColor = .gray
+       pageControl.currentPageIndicatorTintColor = .white
+       return pageControl
+    }()
+    
+    private lazy var moreFor24Hours: UILabel = {
+        let label = UILabel()
+        label.frame = CGRect(x: 0, y: 0, width: 174, height: 20)
+        label.backgroundColor = .white
+        label.textColor = UIColor(red: 0.154, green: 0.152, blue: 0.135, alpha: 1)
+        label.font = UIFont(name: "Rubik-Regular", size: 16)
+
+        var paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineHeightMultiple = 1.05
+        
+        label.textAlignment = .right
+        label.attributedText = NSMutableAttributedString(string: "Подробнее на 24 часа", attributes: [NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.kern: 0.16, NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        return label
     }()
 
     override func viewDidLoad() {
@@ -176,6 +199,9 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         scrollViewContainer.addSubview(humidityLabel)
         scrollViewContainer.addSubview(windSpeedLabel)
         scrollViewContainer.addSubview(dateLabel)
+        
+        scrollViewContainer.addSubview(moreFor24Hours)
+        scrollViewContainer.addSubview(hourlyCollectionView)
         
         configureScroll()
         setupLayout()
@@ -229,7 +255,7 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
             make.top.equalTo(uiView).offset(58)
             make.centerX.equalTo(uiView)
             make.height.equalTo(60)
-            make.width.equalTo(60)
+            make.width.equalTo(80)
         }
         
         temperatureDescription.snp.makeConstraints { (make) -> Void in
@@ -281,6 +307,19 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
             make.height.equalTo(20)
             make.centerX.equalTo(uiView)
         }
+        
+        moreFor24Hours.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(uiView.snp.bottom).offset(20)
+            make.trailing.equalTo(-15)
+            make.height.equalTo(20)
+            make.width.equalTo(174)
+        }
+        
+        hourlyCollectionView.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(moreFor24Hours.snp.bottom).offset(10)
+            make.width.equalTo(scrollView)
+            make.height.equalTo(85)
+        }
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
@@ -305,17 +344,49 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
 
     //MARK: - Networking
 
-    func getWeatherData(url: String, parameters: [String: String]) {
-        
+    func getWeatherDataOnOneDay(url: String, parameters: [String: String]) {
         AF.request(url, method: HTTPMethod.get, parameters: parameters).responseJSON { response in
             
             switch response.result {
-    
             case .success(let value):
                 print("Success! Got the weather data")
                 let weatherJSON : JSON = JSON(value)
                 self.updateWeatherData(json: weatherJSON)
-                print("weatherJSON: " + weatherJSON.debugDescription)
+                print("weatherJSON One Day: " + weatherJSON.debugDescription)
+
+            case .failure(let error):
+                print("Error \(error)")
+                self.cityLabel.text = "Connection Issues"
+            }
+        }
+    }
+    
+    func getWeatherDataHourly(url: String, parameters: [String: String]) {
+        AF.request(url, method: HTTPMethod.get, parameters: parameters).responseJSON { response in
+            
+            switch response.result {
+            case .success(let value):
+                print("Success! Got the weather data")
+                let weatherJSON : JSON = JSON(value)
+                self.updateWeatherDataHourly(json: weatherJSON)
+                print("weatherJSON Hourly: " + weatherJSON.debugDescription)
+
+            case .failure(let error):
+                print("Error \(error)")
+                self.cityLabel.text = "Connection Issues"
+            }
+        }
+    }
+    
+    func getWeatherDataOnMonth(url: String, parameters: [String: String]) {
+        AF.request(url, method: HTTPMethod.get, parameters: parameters).responseJSON { response in
+            
+            switch response.result {
+            case .success(let value):
+                print("Success! Got the weather data")
+                let weatherJSON : JSON = JSON(value)
+                self.updateWeatherDataOnMonth(json: weatherJSON)
+                print("weatherJSON On Month: " + weatherJSON.debugDescription)
 
             case .failure(let error):
                 print("Error \(error)")
@@ -358,6 +429,14 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         else {
             cityLabel.text = "Weather Unavailable"
         }
+    }
+    
+    func updateWeatherDataHourly(json: JSON) {
+        
+    }
+    
+    func updateWeatherDataOnMonth(json: JSON) {
+        
     }
 
     //MARK: - UI Updates
@@ -402,7 +481,9 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
             
             let params: [String : String] = ["lat": latitude, "lon": longitude, "appid": api_key]
             
-            getWeatherData(url: WEATHER_URL, parameters: params)
+            getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params)
+//            getWeatherDataHourly(url: WEATHER_URL_HOURLY, parameters: params)
+//            getWeatherDataOnMonth(url: WEATHER_URL_MOUNTH, parameters: params)
         }
     }
     
@@ -417,7 +498,7 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         
         let params : [String : String] = ["q" : city, "appid" : api_key]
         
-        getWeatherData(url: WEATHER_URL, parameters: params)
+        getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -441,34 +522,37 @@ extension String {
 }
 
 extension WeatherViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 0
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+          return 1
     }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+          return 24
+       }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = HourlyCollectionViewCell()
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HourlyCollectionViewCell.self), for: indexPath) as! HourlyCollectionViewCell
 
-//        let image = PhotoStorage().photos[indexPath.item]
-//        cell.configure(image: image)
+        let image = UIImage(systemName: "sun.max")!
+        cell.configure(image: image, temperature: 20, hour: "12:00")
         return cell
     }
 }
 
 extension WeatherViewController: UICollectionViewDelegateFlowLayout {
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-//        let width = (collectionView.frame.width  - 4 * baseOffset) / 3
-//        return CGSize(width: width, height: width)
-//    }
-//
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 15
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: 42, height: 80)
     }
+//
+//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+//        return 15
+//    }
 //
 //    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
 //        return baseOffset
 //    }
 //
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-//        UIEdgeInsets(top: baseOffset, left: baseOffset, bottom: baseOffset, right: baseOffset)
-//    }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
+    }
 }
