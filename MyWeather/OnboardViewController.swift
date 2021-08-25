@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreLocation
+import SnapKit
 
 class OnboardViewController: UIViewController, CLLocationManagerDelegate {
     
@@ -42,21 +43,26 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
         
         locationManager = CLLocationManager()
         locationManager?.delegate = self
+        locationManager?.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        locationManager?.startUpdatingLocation()
+        configure()
     }
     
-//    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-//        if status == .authorizedAlways {
-//            if CLLocationManager.isMonitoringAvailable(for: CLBeaconRegion.self) {
-//                if CLLocationManager.isRangingAvailable() {
-//                    // do stuff
-//                }
-//            }
-//        }
-//    }
+    @objc func allowButtonClicked() {
+        print("Запрашиваем разрешение на локацию")
+        Core.shared.setIsNotNewUser()
+        locationManager?.requestWhenInUseAuthorization()
+        let vc = WeatherViewController()
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: false, completion: nil)
+    }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        configure()
+    @objc func rejectButtonClicked() {
+        print("Не нужно разрешение на локацию")
+        Core.shared.setIsNotNewUser()
+        let vc = WeatherViewController()
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: false, completion: nil)
     }
     
     private func configure() {
@@ -82,17 +88,13 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     private func configureScroll() {
+        scrollView.snp.makeConstraints { (make) -> Void in
+            make.edges.equalTo(view)
+        }
 
-        scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        scrollView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-
-        scrollViewContainer.widthAnchor.constraint(equalTo: scrollView.widthAnchor).isActive = true
-        scrollViewContainer.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
-        scrollViewContainer.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
-        scrollViewContainer.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-        scrollViewContainer.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
+        scrollViewContainer.snp.makeConstraints { (make) -> Void in
+            make.edges.equalTo(scrollView)
+        }
     }
     
     private func configureImage() {
@@ -184,23 +186,6 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
         allowLocationButton.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -17).isActive = true
         allowLocationButton.topAnchor.constraint(equalTo: labelText3.topAnchor, constant: 70).isActive = true
         allowLocationButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
-    }
-    
-    @objc func allowButtonClicked() {
-        print("Запрашиваем разрешение на локацию")
-        Core.shared.setIsNotNewUser()
-        locationManager?.requestAlwaysAuthorization()
-        let vc = WeatherViewController()
-        vc.modalPresentationStyle = .fullScreen
-        present(vc, animated: false, completion: nil)
-    }
-    
-    @objc func rejectButtonClicked() {
-        print("Не нужно разрешение на локацию")
-        Core.shared.setIsNotNewUser()
-        let vc = WeatherViewController()
-        vc.modalPresentationStyle = .fullScreen
-        present(vc, animated: false, completion: nil)
     }
     
     private func configureRejectButtonLocation() {
