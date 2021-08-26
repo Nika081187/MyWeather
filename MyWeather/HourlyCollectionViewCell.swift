@@ -21,17 +21,17 @@ class HourlyCollectionViewCell: UICollectionViewCell {
     }()
     
     private lazy var weatherImage: UIImageView = {
-        let photoImage = UIImageView()
-        photoImage.toAutoLayout()
-        photoImage.contentMode = .scaleAspectFit
-        return photoImage
+        let image = UIImageView()
+        image.tintColor = .systemBlue
+        image.toAutoLayout()
+        image.contentMode = .scaleAspectFit
+        return image
     }()
     
     lazy var temperatureLabel: UILabel = {
         let label = UILabel()
         label.text = ""
         label.font = UIFont.systemFont(ofSize: 10)
-        label.textColor = .white
         label.toAutoLayout()
         return label
     }()
@@ -39,7 +39,6 @@ class HourlyCollectionViewCell: UICollectionViewCell {
     lazy var hourLabel: UILabel = {
         let label = UILabel()
         label.text = ""
-        label.backgroundColor = .white
         label.textColor = UIColor(red: 0.613, green: 0.592, blue: 0.592, alpha: 1)
         label.font = UIFont.systemFont(ofSize: 10)
 
@@ -55,8 +54,15 @@ class HourlyCollectionViewCell: UICollectionViewCell {
     
     public func configure(image: UIImage, temperature: Int, hour: String){
         weatherImage.image = image
-        temperatureLabel.text = "\(temperature)"
+        temperatureLabel.text = "\(temperature)°"
         hourLabel.text = "\(hour)"
+    }
+    
+    public func selected(){
+        temperatureLabel.textColor = .white
+        hourLabel.textColor = .white
+        containerView.backgroundColor =  .systemBlue
+        weatherImage.tintColor = .yellow
     }
     
     override init(frame: CGRect) {
@@ -80,10 +86,10 @@ class HourlyCollectionViewCell: UICollectionViewCell {
         }
         
         hourLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(containerView).offset(10)
+            make.top.equalTo(containerView).offset(12)
             make.centerX.equalTo(containerView)
             make.height.equalTo(20)
-            make.width.equalTo(20)
+            make.width.equalTo(25)
         }
         
         weatherImage.snp.makeConstraints { (make) -> Void in

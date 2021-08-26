@@ -11,10 +11,10 @@ import SnapKit
 class DayWithTemperature: UITableViewCell {
     let baseOffset: CGFloat =  16
     
-    public func configure(description: String, data: String, humidity: Int, temperature: Int){
+    public func configure(description: String, data: String, humidity: Int, temperature: String){
         descriptionLabel.text = description
         dataLabel.text = data
-        humidityLabel.text = "\(humidity)"
+        humidityLabel.text = "\(humidity)%"
         temperatureLabel.text = "\(temperature)"
     }
 
@@ -22,7 +22,7 @@ class DayWithTemperature: UITableViewCell {
         let nameLabel = UILabel()
         nameLabel.toAutoLayout()
         nameLabel.textColor = .black
-        nameLabel.font = UIFont.boldSystemFont(ofSize: 20.0)
+        nameLabel.font = UIFont.systemFont(ofSize: 16)
         nameLabel.numberOfLines = 2
         return nameLabel
     }()
@@ -31,7 +31,7 @@ class DayWithTemperature: UITableViewCell {
         let descriptionLabel = UILabel()
         descriptionLabel.toAutoLayout()
         descriptionLabel.textColor = .gray
-        descriptionLabel.font = descriptionLabel.font.withSize(14)
+        descriptionLabel.font = UIFont.systemFont(ofSize: 16)
         descriptionLabel.numberOfLines = 0
         return descriptionLabel
     }()
@@ -40,7 +40,7 @@ class DayWithTemperature: UITableViewCell {
         let likesLabel = UILabel()
         likesLabel.toAutoLayout()
         likesLabel.textColor = .black
-        likesLabel.font = descriptionLabel.font.withSize(16)
+        likesLabel.font = UIFont.systemFont(ofSize: 12)
         return likesLabel
     }()
     
@@ -48,7 +48,7 @@ class DayWithTemperature: UITableViewCell {
         let viewsLabel = UILabel()
         viewsLabel.toAutoLayout()
         viewsLabel.textColor = .black
-        viewsLabel.font = descriptionLabel.font.withSize(16)
+        viewsLabel.font = UIFont.systemFont(ofSize: 18)
         return viewsLabel
     }()
     
@@ -62,6 +62,8 @@ class DayWithTemperature: UITableViewCell {
     }
     
     func setupLayout() {
+        contentView.layer.backgroundColor = UIColor(red: 0.914, green: 0.933, blue: 0.98, alpha: 1).cgColor
+        
         contentView.addSubview(descriptionLabel)
         contentView.addSubview(dataLabel)
         contentView.addSubview(temperatureLabel)
@@ -76,14 +78,14 @@ class DayWithTemperature: UITableViewCell {
         
         humidityLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(dataLabel.snp.bottom).offset(6)
-            make.height.equalTo(23)
-            make.width.equalTo(16)
+            make.height.equalTo(16)
+            make.width.equalTo(30)
+            make.leading.equalTo(contentView).offset(30)
         }
         
         descriptionLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(contentView).offset(19)
-            make.leading.equalTo(humidityLabel).offset(13)
-            make.trailing.equalTo(contentView).offset(-72)
+            make.leading.equalTo(contentView).offset(66)
             make.height.equalTo(20)
         }
         
@@ -91,7 +93,6 @@ class DayWithTemperature: UITableViewCell {
             make.top.equalTo(contentView).offset(19)
             make.trailing.equalTo(contentView).offset(-26)
             make.height.equalTo(20)
-            make.width.equalTo(43)
         }
     }
 }

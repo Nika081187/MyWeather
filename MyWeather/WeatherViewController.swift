@@ -11,7 +11,7 @@ import CoreLocation
 import Alamofire
 import SwiftyJSON
 
-class WeatherViewController: UITabBarController, CLLocationManagerDelegate, ChangeCityDelegate {
+class WeatherViewController: UIViewController, CLLocationManagerDelegate, ChangeCityDelegate {
     
     private let WEATHER_URL_ONE_DAY = "http://api.openweathermap.org/data/2.5/weather"
     private let WEATHER_URL_HOURLY = "http://api.openweathermap.org/data/2.5/forecast/hourly"
@@ -22,7 +22,7 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
     
     private let weatherDataModel = WeatherDatamodel()
     
-    private let temperatureTable = UITableView(frame: .zero, style: .grouped)
+    private let temperatureTable = UITableView(frame: .infinite, style: .plain)
     
     private var reuseId: String {
         String(describing: DayWithTemperature.self)
@@ -74,14 +74,6 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         let scroll = UIScrollView()
         scroll.toAutoLayout()
         return scroll
-    }()
-    
-    private lazy var scrollViewContainer: UIStackView = {
-        let view = UIStackView()
-        view.axis = .vertical
-        view.spacing = 10
-        view.toAutoLayout()
-        return view
     }()
     
     private lazy var uiView: UIView = {
@@ -178,6 +170,22 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         return label
     }()
     
+    lazy var daysCountLabel: UILabel = {
+        var label = UILabel()
+
+        label.frame = CGRect(x: 0, y: 0, width: 83, height: 20)
+        label.backgroundColor = .white
+        label.textColor = UIColor(red: 0.154, green: 0.152, blue: 0.135, alpha: 1)
+        label.font = UIFont(name: "Rubik-Regular", size: 16)
+
+        var paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineHeightMultiple = 1.05
+
+        label.textAlignment = .right
+        label.attributedText = NSMutableAttributedString(string: "25 дней", attributes: [NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.kern: 0.16, NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        return label
+    }()
+    
     private lazy var moreFor24Hours: UILabel = {
         let label = UILabel()
         label.frame = CGRect(x: 0, y: 0, width: 174, height: 20)
@@ -200,37 +208,41 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         locationManager.startUpdatingLocation()
         
+        hourlyCollectionView.isPagingEnabled = true
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        hourlyCollectionView.collectionViewLayout = layout
+        hourlyCollectionView.allowsMultipleSelection = false
+        
         temperatureTable.toAutoLayout()
-        temperatureTable.register(DayWithTemperature.self, forCellReuseIdentifier: reuseId)
         temperatureTable.dataSource = self
-        temperatureTable.rowHeight = UITableView.automaticDimension
-        temperatureTable.estimatedRowHeight = 250
+        temperatureTable.delegate = self
+        temperatureTable.register(DayWithTemperature.self, forCellReuseIdentifier: reuseId)
         temperatureTable.allowsSelection = false
 
         view.backgroundColor = .white
         
         view.addSubview(scrollView)
-        scrollView.addSubview(scrollViewContainer)
-        scrollViewContainer.addSubview(uiView)
-        scrollViewContainer.addSubview(cityLabel)
-        scrollViewContainer.addSubview(feelsLikeTemperatureLabel)
-        scrollViewContainer.addSubview(temperatureLabel)
-        scrollViewContainer.addSubview(temperatureDescription)
+        scrollView.addSubview(uiView)
+        scrollView.addSubview(cityLabel)
+        scrollView.addSubview(feelsLikeTemperatureLabel)
+        scrollView.addSubview(temperatureLabel)
+        scrollView.addSubview(temperatureDescription)
         
-        scrollViewContainer.addSubview(sunsetLabel)
-        scrollViewContainer.addSubview(sunriseLabel)
-        scrollViewContainer.addSubview(sunsetImage)
-        scrollViewContainer.addSubview(sunriseImage)
-        scrollViewContainer.addSubview(humidityLabel)
-        scrollViewContainer.addSubview(windSpeedLabel)
-        scrollViewContainer.addSubview(dateLabel)
+        scrollView.addSubview(sunsetLabel)
+        scrollView.addSubview(sunriseLabel)
+        scrollView.addSubview(sunsetImage)
+        scrollView.addSubview(sunriseImage)
+        scrollView.addSubview(humidityLabel)
+        scrollView.addSubview(windSpeedLabel)
+        scrollView.addSubview(dateLabel)
         
-        scrollViewContainer.addSubview(moreFor24Hours)
-        scrollViewContainer.addSubview(hourlyCollectionView)
-        scrollViewContainer.addSubview(dailyLabel)
-        scrollViewContainer.addSubview(temperatureTable)
+        scrollView.addSubview(moreFor24Hours)
+        scrollView.addSubview(hourlyCollectionView)
+        scrollView.addSubview(dailyLabel)
+        scrollView.addSubview(daysCountLabel)
+        scrollView.addSubview(temperatureTable)
         
-        configureScroll()
         setupLayout()
     }
     
@@ -245,17 +257,11 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         }
     }
     
-    private func configureScroll() {
+    func setupLayout() {
+        
         scrollView.snp.makeConstraints { (make) -> Void in
             make.edges.equalTo(view)
         }
-        
-        scrollViewContainer.snp.makeConstraints { (make) -> Void in
-            make.edges.equalTo(scrollView)
-        }
-    }
-    
-    func setupLayout() {
         
         cityLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(scrollView).offset(40)
@@ -337,21 +343,27 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
         
         moreFor24Hours.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(uiView.snp.bottom).offset(20)
-            make.trailing.equalTo(-15)
+            make.trailing.equalTo(temperatureTable)
             make.height.equalTo(20)
-            make.width.equalTo(174)
         }
         
         hourlyCollectionView.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(moreFor24Hours.snp.bottom).offset(10)
-            make.width.equalTo(scrollView)
             make.height.equalTo(85)
+            make.leading.equalTo(scrollView).offset(16)
+            make.trailing.equalTo(scrollView).offset(-16)
         }
         
         dailyLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(hourlyCollectionView.snp.bottom).offset(30)
             make.leading.equalTo(scrollView).offset(16)
             make.height.equalTo(22)
+        }
+        
+        daysCountLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(dailyLabel)
+            make.height.equalTo(20)
+            make.trailing.equalTo(temperatureTable)
         }
         
         temperatureTable.snp.makeConstraints { (make) -> Void in
@@ -371,15 +383,6 @@ class WeatherViewController: UITabBarController, CLLocationManagerDelegate, Chan
             }
         }
         print("locationManager status: \(status.rawValue)")
-    }
-    
-    func setupTabs(locations: [Location]) {
-        var list = [LocationViewController]()
-        for l in locations {
-            list.append(LocationViewController(location: l))
-        }
-        list.append(LocationViewController(location: Location()))
-        viewControllers = list
     }
 
     //MARK: - Networking
@@ -574,7 +577,7 @@ extension WeatherViewController: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HourlyCollectionViewCell.self), for: indexPath) as! HourlyCollectionViewCell
 
         let image = UIImage(systemName: "sun.max")!
-        cell.configure(image: image, temperature: 20, hour: "12:00")
+        cell.configure(image: image, temperature: 20, hour: "\(indexPath.row):00")
         return cell
     }
 }
@@ -587,21 +590,46 @@ extension WeatherViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
+        if let cell = collectionView.cellForItem(at: indexPath) as? HourlyCollectionViewCell {
+            cell.selected()
+        }
+    }
 }
 
 extension WeatherViewController: UITableViewDataSource {
     
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell: DayWithTemperature = tableView.dequeueReusableCell(withIdentifier: reuseId, for: indexPath) as! DayWithTemperature
+        cell.configure(description: "Солнечно", data: "\(indexPath.section + 1)/12", humidity: 56, temperature: "23°-25°")
+        cell.toAutoLayout()
+        cell.layer.cornerRadius = 5
+        cell.clipsToBounds = true
+        return cell
+    }
+}
+
+extension WeatherViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 56
+    }
+    
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return 25
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 30
+        return 1
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell: DayWithTemperature = tableView.dequeueReusableCell(withIdentifier: reuseId, for: indexPath) as! DayWithTemperature
-        cell.configure(description: "Неясная влажность", data: "18/12", humidity: 123, temperature: 24)
-        return cell
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 10
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        headerView.backgroundColor = UIColor.clear
+        return headerView
     }
 }
