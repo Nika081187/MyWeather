@@ -45,6 +45,38 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
         return label
     }()
     
+    private lazy var locationButton: UIButton = {
+        let button = UIButton()
+        button.toAutoLayout()
+        button.backgroundColor = .none
+        button.setImage(UIImage(systemName: "location.viewfinder"), for: .normal)
+        button.addTarget(self, action: #selector(locationButtonClicked), for:.touchUpInside)
+        return button
+    }()
+    
+    @objc func locationButtonClicked() {
+        print("Нажали кнопку locationButton")
+        let vc = OnboardViewController()
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: true, completion: nil)
+    }
+    
+    private lazy var settingsButton: UIButton = {
+        let button = UIButton()
+        button.toAutoLayout()
+        button.backgroundColor = .none
+        button.setImage(UIImage(systemName: "list.dash"), for: .normal)
+        button.addTarget(self, action: #selector(settingsButtonClicked), for:.touchUpInside)
+        return button
+    }()
+    
+    @objc func settingsButtonClicked() {
+        print("Нажали кнопку settingsButton")
+        let vc = SettingsViewController()
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: true, completion: nil)
+    }
+    
     private lazy var temperatureDescription: UILabel = {
         let label = UILabel()
         label.text = ""
@@ -225,6 +257,10 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
         view.addSubview(scrollView)
         scrollView.addSubview(uiView)
         scrollView.addSubview(cityLabel)
+
+        scrollView.addSubview(locationButton)
+        scrollView.addSubview(settingsButton)
+
         scrollView.addSubview(feelsLikeTemperatureLabel)
         scrollView.addSubview(temperatureLabel)
         scrollView.addSubview(temperatureDescription)
@@ -249,6 +285,30 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
+        if let value = defaults.value(forKey: "temperature") {
+            return defaults.set(value as? Bool, forKey: "temperature")
+        } else {
+            defaults.set(true, forKey: "temperature") // true = C, false = F
+        }
+        
+        if let value = defaults.value(forKey: "windSpeed") {
+            return defaults.set(value as? Bool, forKey: "windSpeed")
+        } else {
+            defaults.set(true, forKey: "windSpeed") // true = Mi, false = Km
+        }
+        
+        if let value = defaults.value(forKey: "timeFormat") {
+            return defaults.set(value as? Bool, forKey: "timeFormat")
+        } else {
+            defaults.set(false, forKey: "timeFormat") // true = 12, false = 24
+        }
+        
+        if let value = defaults.value(forKey: "notifications") {
+            return defaults.set(value as? Bool, forKey: "notifications")
+        } else {
+            defaults.set(true, forKey: "notifications") // true = ON, false = OFF
+        }
+
         if Core.shared.isNewUser() {
             print("Показываем онбординг новому пользователю")
             let vc = OnboardViewController()
@@ -267,6 +327,18 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
             make.top.equalTo(scrollView).offset(40)
             make.centerX.equalTo(scrollView)
             make.height.equalTo(22)
+        }
+        
+        locationButton.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(cityLabel)
+            make.height.equalTo(40)
+            make.trailing.equalTo(scrollView).offset(-15)
+        }
+        
+        settingsButton.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(cityLabel)
+            make.height.equalTo(40)
+            make.leading.equalTo(scrollView).offset(15)
         }
         
         uiView.snp.makeConstraints { (make) -> Void in

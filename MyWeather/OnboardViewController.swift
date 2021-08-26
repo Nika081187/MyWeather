@@ -9,6 +9,8 @@ import UIKit
 import CoreLocation
 import SnapKit
 
+public let defaults = UserDefaults.standard
+
 class OnboardViewController: UIViewController, CLLocationManagerDelegate {
     
     private let commonColor = UIColor(red: 0.13, green: 0.31, blue: 0.78, alpha: 1.00)
@@ -54,7 +56,7 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
         locationManager?.requestWhenInUseAuthorization()
         let vc = WeatherViewController()
         vc.modalPresentationStyle = .fullScreen
-        present(vc, animated: false, completion: nil)
+        present(vc, animated: true, completion: nil)
     }
     
     @objc func rejectButtonClicked() {
@@ -207,11 +209,11 @@ class Core {
     static let shared = Core()
     
     func isNewUser() -> Bool {
-        return !UserDefaults.standard.bool(forKey: "isNewUser")
+        return !defaults.bool(forKey: "isNewUser")
     }
     
     func setIsNotNewUser() {
-        UserDefaults.standard.set(true, forKey: "isNewUser")
+        defaults.set(true, forKey: "isNewUser")
         print("Онбординга больше не будет")
     }
 }

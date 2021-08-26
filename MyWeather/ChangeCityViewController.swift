@@ -7,7 +7,6 @@
 
 import UIKit
 
-
 protocol ChangeCityDelegate {
     
     func userEnterNewCityName(city: String)
