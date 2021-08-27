@@ -218,10 +218,10 @@ class SettingsViewController: UIViewController {
         
         setSettingsButton.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(notificationLabel.snp.bottom).offset(42)
-            make.leading.equalTo(uiView).offset(35)
-            make.trailing.equalTo(uiView).offset(-35)
             make.height.equalTo(40)
             make.bottom.equalTo(uiView).offset(-16)
+            make.width.equalTo(250)
+            make.centerX.equalTo(uiView)
         }
     }
 }

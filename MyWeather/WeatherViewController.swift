@@ -250,7 +250,6 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
         temperatureTable.dataSource = self
         temperatureTable.delegate = self
         temperatureTable.register(DayWithTemperature.self, forCellReuseIdentifier: reuseId)
-        temperatureTable.allowsSelection = false
 
         view.backgroundColor = .white
         
@@ -528,6 +527,8 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
             
         weatherDataModel.sunrise = json["sys"]["sunrise"].doubleValue
             
+        weatherDataModel.clouds = json["clouds"]["all"].intValue
+            
         weatherDataModel.humidity = json["main"]["humidity"].intValue
             
         weatherDataModel.windSpeed = json["wind"]["speed"].floatValue
@@ -683,6 +684,7 @@ extension WeatherViewController: UITableViewDataSource {
 }
 
 extension WeatherViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 56
     }
@@ -703,5 +705,12 @@ extension WeatherViewController: UITableViewDelegate {
         let headerView = UIView()
         headerView.backgroundColor = UIColor.clear
         return headerView
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("Выбрали день: \(indexPath.item + 1)")
+        let vc = DayWeatherViewController(weatherModel: weatherDataModel, day: indexPath.item + 1)
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: true)
     }
 }

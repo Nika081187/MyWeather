@@ -23,6 +23,8 @@ class WeatherDatamodel {
     var date: Double = 0
     var feelsLike: Int = 0
     
+    var clouds: Int = 0
+    
 //    weatherJSON: {
 //      "clouds" : {
 //        "all" : 20

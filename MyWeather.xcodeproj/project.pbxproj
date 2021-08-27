@@ -22,6 +22,7 @@
 		289BCFE326D69F010036B09C /* HourlyCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289BCFE226D69F010036B09C /* HourlyCollectionViewCell.swift */; };
 		28C33B3126D6C664005C130B /* DayWithTemperature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28C33B3026D6C664005C130B /* DayWithTemperature.swift */; };
 		28C33B3426D80926005C130B /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28C33B3326D80926005C130B /* SettingsViewController.swift */; };
+		28C33B3826D8FE54005C130B /* DayWeatherViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28C33B3726D8FE54005C130B /* DayWeatherViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +42,7 @@
 		289BCFE226D69F010036B09C /* HourlyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HourlyCollectionViewCell.swift; sourceTree = "<group>"; };
 		28C33B3026D6C664005C130B /* DayWithTemperature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayWithTemperature.swift; sourceTree = "<group>"; };
 		28C33B3326D80926005C130B /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		28C33B3726D8FE54005C130B /* DayWeatherViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayWeatherViewController.swift; sourceTree = "<group>"; };
 		5551DD287789BB02FA5E4FDD /* Pods-MyWeather.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MyWeather.release.xcconfig"; path = "Target Support Files/Pods-MyWeather/Pods-MyWeather.release.xcconfig"; sourceTree = "<group>"; };
 		6DE1AE3C6E0D3CEB9A4A80B4 /* Pods-MyWeather.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MyWeather.debug.xcconfig"; path = "Target Support Files/Pods-MyWeather/Pods-MyWeather.debug.xcconfig"; sourceTree = "<group>"; };
 		AF71CABF850EF8DC95E2B3ED /* Pods_MyWeather.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MyWeather.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -86,6 +88,7 @@
 				2841161826A48E070049DB8C /* Location.swift */,
 				28C33B3026D6C664005C130B /* DayWithTemperature.swift */,
 				289BCFE226D69F010036B09C /* HourlyCollectionViewCell.swift */,
+				28C33B3726D8FE54005C130B /* DayWeatherViewController.swift */,
 				284ACAF326C0351A003D7BBD /* ChangeCityViewController.swift */,
 				28C33B3326D80926005C130B /* SettingsViewController.swift */,
 				2841161526A4871E0049DB8C /* LocationViewController.swift */,
@@ -235,6 +238,7 @@
 				289BCFE326D69F010036B09C /* HourlyCollectionViewCell.swift in Sources */,
 				284ACB6226C03975003D7BBD /* WeatherViewController.swift in Sources */,
 				284ACB6326C03975003D7BBD /* OnboardViewController.swift in Sources */,
+				28C33B3826D8FE54005C130B /* DayWeatherViewController.swift in Sources */,
 				28C33B3126D6C664005C130B /* DayWithTemperature.swift in Sources */,
 				284ACB6426C03975003D7BBD /* Location.swift in Sources */,
 				284ACB6526C03975003D7BBD /* ChangeCityViewController.swift in Sources */,

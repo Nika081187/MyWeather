@@ -74,7 +74,7 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
         labelText1.toAutoLayout()
         labelText2.toAutoLayout()
         labelText3.toAutoLayout()
-        allowLocationButton.toAutoLayout()
+
         scrollViewContainer.addArrangedSubview(imageView)
         scrollViewContainer.addArrangedSubview(labelText1)
         scrollViewContainer.addArrangedSubview(labelText2)
@@ -105,27 +105,10 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
 
         imageView.image = image;
         imageView.contentMode = .scaleAspectFit
-        
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad:
-            print("Мы на pad")
-        case .unspecified:
-            print("Мы на unspecified")
-        case .phone:
-            print("Мы на phone")
-        case .tv:
-            print("Мы на tv")
-        case .carPlay:
-            print("Мы на carPlay")
-        case .mac:
-            print("Мы на mac")
-        @unknown default:
-            print("Мы на default")
-        }
-
         imageView.toAutoLayout()
         imageView.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 50).isActive = true
         imageView.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor, constant: 0.0).isActive = true
+        imageView.heightAnchor.constraint(equalToConstant: 400).isActive = true
     }
     
     private func configureTextLabels() {
@@ -144,7 +127,7 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
         labelText1.toAutoLayout()
         labelText1.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -19).isActive = true
         labelText1.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 19).isActive = true
-        labelText1.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 30).isActive = true
+        labelText1.topAnchor.constraint(equalTo: imageView.bottomAnchor).isActive = true
         
         labelText2.backgroundColor = commonColor
         labelText2.textColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
@@ -176,32 +159,32 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     private func configureAllowButtonLocation() {
-        allowLocationButton.setTitle("ИСПОЛЬЗОВАТЬ МЕСТОПОЛОЖЕНИЕ  УСТРОЙСТВА", for: .normal)
+        allowLocationButton.setTitle("использовать местоположение устройства", for: .normal)
         allowLocationButton.backgroundColor = UIColor(red: 0.95, green: 0.43, blue: 0.07, alpha: 1.00)
         allowLocationButton.layer.cornerRadius = 15
-        allowLocationButton.titleLabel?.font = UIFont(name: commontFont, size: 12)
+        allowLocationButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
         allowLocationButton.setTitleColor(UIColor(red: 1, green: 1, blue: 1, alpha: 1), for: .normal)
         allowLocationButton.addTarget(self, action: #selector(allowButtonClicked), for:.touchUpInside)
 
         allowLocationButton.toAutoLayout()
-        allowLocationButton.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 18).isActive = true
-        allowLocationButton.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -17).isActive = true
         allowLocationButton.topAnchor.constraint(equalTo: labelText3.topAnchor, constant: 70).isActive = true
+        allowLocationButton.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -10).isActive = true
         allowLocationButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        allowLocationButton.widthAnchor.constraint(equalToConstant: 340).isActive = true
     }
     
     private func configureRejectButtonLocation() {
         rejectLocationButton.setTitle("НЕТ, Я БУДУ ДОБАВЛЯТЬ ЛОКАЦИИ", for: .normal)
         rejectLocationButton.backgroundColor = commonColor
-        rejectLocationButton.titleLabel?.font = UIFont(name: commontFont, size: 16)
+        rejectLocationButton.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         rejectLocationButton.setTitleColor(UIColor(red: 1, green: 1, blue: 1, alpha: 1), for: .normal)
         rejectLocationButton.addTarget(self, action: #selector(rejectButtonClicked), for:.touchUpInside)
 
         rejectLocationButton.toAutoLayout()
-        rejectLocationButton.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -17).isActive = true
         rejectLocationButton.topAnchor.constraint(equalTo: allowLocationButton.bottomAnchor, constant: 30).isActive = true
-        rejectLocationButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        rejectLocationButton.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        rejectLocationButton.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -10).isActive = true
+        rejectLocationButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
+        rejectLocationButton.widthAnchor.constraint(equalToConstant: 322).isActive = true
     }
 }
 
