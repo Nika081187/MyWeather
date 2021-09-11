@@ -80,7 +80,7 @@ class DayWithTemperature: UITableViewCell {
             make.top.equalTo(dataLabel.snp.bottom).offset(6)
             make.height.equalTo(16)
             make.width.equalTo(30)
-            make.leading.equalTo(contentView).offset(30)
+            make.leading.equalTo(dataLabel)
         }
         
         descriptionLabel.snp.makeConstraints { (make) -> Void in

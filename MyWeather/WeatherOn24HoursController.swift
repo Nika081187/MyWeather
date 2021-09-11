@@ -29,6 +29,14 @@ class WeatherOn24HoursController: UIViewController {
         return button
     }()
     
+    lazy var cityLabel: UILabel = {
+        let label = UILabel()
+        label.text = ""
+        label.font = UIFont.systemFont(ofSize: 18)
+        label.toAutoLayout()
+        return label
+    }()
+    
     @objc func backButtonClicked() {
         print("Нажали кнопку backButton")
         let vc = WeatherViewController()
@@ -58,10 +66,14 @@ class WeatherOn24HoursController: UIViewController {
         temperatureTable.toAutoLayout()
         temperatureTable.dataSource = self
         temperatureTable.delegate = self
+        temperatureTable.allowsSelection = false
         temperatureTable.register(WeatherOn24HoursCell.self, forCellReuseIdentifier: reuseId)
+        
+        cityLabel.text = weatherDataModel.city
         
         view.addSubview(scrollView)
         scrollView.addSubview(backButton)
+        scrollView.addSubview(cityLabel)
         scrollView.addSubview(temperatureTable)
         setupLayout()
     }
@@ -75,13 +87,20 @@ class WeatherOn24HoursController: UIViewController {
             make.top.equalTo(scrollView).offset(30)
             make.height.equalTo(20)
             make.width.equalTo(200)
-            make.leading.equalTo(scrollView).offset(15)
+            make.leading.equalTo(scrollView)
+        }
+        
+        cityLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(backButton.snp.bottom).offset(20)
+            make.leading.equalTo(scrollView).offset(48)
+            make.height.equalTo(22)
+            make.width.equalTo(100)
         }
         
         temperatureTable.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(backButton.snp.bottom).offset(10)
-            make.leading.equalTo(scrollView).offset(16)
-            make.trailing.equalTo(scrollView).offset(-16)
+            make.top.equalTo(cityLabel.snp.bottom).offset(20)
+            make.leading.equalTo(view)
+            make.trailing.equalTo(view)
             make.bottom.equalTo(view)
         }
     }
@@ -91,10 +110,21 @@ extension WeatherOn24HoursController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: WeatherOn24HoursCell = tableView.dequeueReusableCell(withIdentifier: reuseId, for: indexPath) as! WeatherOn24HoursCell
-        cell.configure(image: #imageLiteral(resourceName: "clouds"), temperature: 24, hour: "12")
+        
+        let date = NSDate(timeIntervalSince1970: weatherDataModel.date)
+        let dayTimePeriodFormatter = DateFormatter()
+        dayTimePeriodFormatter.dateFormat = "MMM / dd"
+        let dateString = dayTimePeriodFormatter.string(from: date as Date)
+        
+        let sectionNumber = indexPath.section * 3
+        cell.configure(date: dateString,
+                       temperature: weatherDataModel.temperature,
+                       hour:  "\(0 + sectionNumber):00",
+                       feelsLike: weatherDataModel.feelsLike,
+                       windSpeed: "\(weatherDataModel.windSpeed) m\\s",
+                       humidity: "\(weatherDataModel.humidity) %",
+                       clouds: "\(weatherDataModel.clouds) %")
         cell.toAutoLayout()
-        cell.layer.cornerRadius = 5
-        cell.clipsToBounds = true
         return cell
     }
 }
@@ -102,11 +132,11 @@ extension WeatherOn24HoursController: UITableViewDataSource {
 extension WeatherOn24HoursController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 56
+        return 170
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 25
+        return 8
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -114,20 +144,13 @@ extension WeatherOn24HoursController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 10
+        return 0
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let headerView = UIView()
         headerView.backgroundColor = UIColor.clear
         return headerView
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("Выбрали день: \(indexPath.item + 1)")
-        let vc = DayWeatherViewController(weatherModel: weatherDataModel, day: indexPath.item + 1)
-        vc.modalPresentationStyle = .fullScreen
-        present(vc, animated: true)
     }
 }
 

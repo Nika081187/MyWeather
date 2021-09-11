@@ -149,6 +149,9 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         let dateString = dayTimePeriodFormatter.string(from: date as Date)
         dateLabel.text = dateString
         feelsLikeTemperatureLabel.text = "\(weatherDataModel.feelsLike)° / \(weatherDataModel.temperature)°"
+        
+        temperatureTable.reloadData()
+        hourlyCollectionView.reloadData()
     }
     
     //MARK: - Location Manager Delegate Methods
@@ -242,7 +245,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
             make.top.equalTo(uiView).offset(33)
             make.centerX.equalTo(uiView)
             make.height.equalTo(20)
-            make.width.equalTo(65)
+            make.width.equalTo(85)
         }
         
         temperatureLabel.snp.makeConstraints { (make) -> Void in
@@ -566,25 +569,26 @@ extension WeatherViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-          return 24
+          return 8
        }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HourlyCollectionViewCell.self), for: indexPath) as! HourlyCollectionViewCell
 
         let image = UIImage(systemName: "sun.max")!
-        cell.configure(image: image, temperature: 20, hour: "\(indexPath.row):00")
+        let sectionNumber = indexPath.row * 3
+        cell.configure(image: image, temperature: weatherDataModel.temperature, hour: "\(0 + sectionNumber):00")
         return cell
     }
 }
 
 extension WeatherViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 42, height: 80)
+        return CGSize(width: 46, height: 80)
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
+        UIEdgeInsets(top: 1, left: 1, bottom: 1, right: 1)
     }
     
     func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
@@ -598,7 +602,7 @@ extension WeatherViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: DayWithTemperature = tableView.dequeueReusableCell(withIdentifier: reuseId, for: indexPath) as! DayWithTemperature
-        cell.configure(description: "Солнечно", data: "\(indexPath.section + 1)/12", humidity: 56, temperature: "23°-25°")
+        cell.configure(description: "\(weatherDataModel.temperatureDescription.capitalizingFirstLetter())", data: "\(indexPath.section + 1)/12", humidity: 56, temperature: "\(weatherDataModel.feelsLike)°")
         cell.toAutoLayout()
         cell.layer.cornerRadius = 5
         cell.clipsToBounds = true

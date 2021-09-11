@@ -89,18 +89,18 @@ class HourlyCollectionViewCell: UICollectionViewCell {
             make.top.equalTo(containerView).offset(12)
             make.centerX.equalTo(containerView)
             make.height.equalTo(20)
-            make.width.equalTo(25)
+            make.width.equalTo(30)
         }
         
         weatherImage.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(hourLabel.snp.bottom).offset(2)
+            make.top.equalTo(hourLabel.snp.bottom).offset(1)
             make.centerX.equalTo(containerView)
             make.height.equalTo(20)
             make.width.equalTo(20)
         }
         
         temperatureLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(weatherImage.snp.bottom).offset(2)
+            make.top.equalTo(weatherImage.snp.bottom).offset(1)
             make.centerX.equalTo(containerView)
             make.height.equalTo(20)
             make.width.equalTo(20)
