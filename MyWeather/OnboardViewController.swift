@@ -62,7 +62,7 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
     @objc func rejectButtonClicked() {
         print("Не нужно разрешение на локацию")
         Core.shared.setIsNotNewUser()
-        let vc = WeatherViewController()
+        let vc = ChangeCityViewController()
         vc.modalPresentationStyle = .fullScreen
         present(vc, animated: false, completion: nil)
     }

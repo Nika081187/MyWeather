@@ -11,21 +11,328 @@ import CoreLocation
 import Alamofire
 import SwiftyJSON
 
-class WeatherViewController: UIViewController, CLLocationManagerDelegate, ChangeCityDelegate {
-    
-    private let WEATHER_URL_ONE_DAY = "http://api.openweathermap.org/data/2.5/weather"
-    private let WEATHER_URL_HOURLY = "http://api.openweathermap.org/data/2.5/forecast/hourly"
-    private let WEATHER_URL_MOUNTH = "http://api.openweathermap.org/data/2.5/forecast/climate"
-    private let api_key = "d1706e13c1806a01f0e2155432f125a8"
+let api_key = "d1706e13c1806a01f0e2155432f125a8"
+let WEATHER_URL_ONE_DAY = "http://api.openweathermap.org/data/2.5/weather"
+//let WEATHER_URL_HOURLY = "http://api.openweathermap.org/data/2.5/forecast/hourly"
+//let WEATHER_URL_MOUNTH = "http://api.openweathermap.org/data/2.5/forecast/climate"
+
+class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     private let locationManager = CLLocationManager()
     
-    private let weatherDataModel = WeatherDatamodel()
+    private var weatherDataModel = WeatherDatamodel()
     
     private let temperatureTable = UITableView(frame: .infinite, style: .plain)
     
+    private var isInit = false
+    
     private var reuseId: String {
         String(describing: DayWithTemperature.self)
+    }
+    
+    init(weather: WeatherDatamodel) {
+        super.init(nibName: nil, bundle: nil)
+        self.weatherDataModel = weather
+        defaults.set(weather.lat, forKey: "lat")
+        defaults.set(weather.lon, forKey: "lon")
+        updateUIWithWeatherData()
+    }
+    
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        locationManager.startUpdatingLocation()
+        locationManager.delegate = self
+        
+        if let lat = defaults.value(forKey: "lat"), let lon = defaults.value(forKey: "lon") {
+            let params: [String : String] = ["lat": "\(lat)", "lon": "\(lon)", "appid": api_key]
+            getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params) {  weather in
+                self.weatherDataModel = weather!
+                self.updateUIWithWeatherData()
+            }
+        }
+        
+        hourlyCollectionView.isPagingEnabled = true
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        hourlyCollectionView.collectionViewLayout = layout
+        hourlyCollectionView.allowsMultipleSelection = false
+        
+        temperatureTable.toAutoLayout()
+        temperatureTable.dataSource = self
+        temperatureTable.delegate = self
+        temperatureTable.register(DayWithTemperature.self, forCellReuseIdentifier: reuseId)
+
+        view.backgroundColor = .white
+        configure()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        if let value = defaults.value(forKey: "temperature") {
+            return defaults.set(value as? Bool, forKey: "temperature")
+        } else {
+            defaults.set(true, forKey: "temperature") // true = C, false = F
+        }
+        
+        if let value = defaults.value(forKey: "windSpeed") {
+            return defaults.set(value as? Bool, forKey: "windSpeed")
+        } else {
+            defaults.set(true, forKey: "windSpeed") // true = Mi, false = Km
+        }
+        
+        if let value = defaults.value(forKey: "timeFormat") {
+            return defaults.set(value as? Bool, forKey: "timeFormat")
+        } else {
+            defaults.set(false, forKey: "timeFormat") // true = 12, false = 24
+        }
+        
+        if let value = defaults.value(forKey: "notifications") {
+            return defaults.set(value as? Bool, forKey: "notifications")
+        } else {
+            defaults.set(true, forKey: "notifications") // true = ON, false = OFF
+        }
+
+        if Core.shared.isNewUser() {
+            print("Показываем онбординг новому пользователю")
+            let vc = OnboardViewController()
+            vc.modalPresentationStyle = .fullScreen
+            present(vc, animated: true)
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if let _ = defaults.value(forKey: "lat"), let _ = defaults.value(forKey: "lon") {
+            return
+        }
+        
+        if status != .notDetermined || !weatherDataModel.city.isEmpty {
+            updateUIWithWeatherData()
+        } else if Core.shared.isNewUser() {
+            print("Показываем онбординг новому пользователю")
+            let vc = OnboardViewController()
+            vc.modalPresentationStyle = .fullScreen
+            present(vc, animated: true)
+        }
+        print("locationManager status: \(status.rawValue)")
+    }
+
+    //MARK: - UI Updates
+    
+    func updateUIWithWeatherData() {
+        cityLabel.text = weatherDataModel.city
+        temperatureLabel.text = "\(weatherDataModel.temperature)°"
+        temperatureDescription.text = weatherDataModel.temperatureDescription.capitalizingFirstLetter()
+        
+        let sunsetDate = NSDate(timeIntervalSince1970: weatherDataModel.sunset)
+        let sunriseDate = NSDate(timeIntervalSince1970: weatherDataModel.sunrise)
+        
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "hh:mm"
+        
+        sunsetLabel.text = "\(timeFormatter.string(from: sunsetDate as Date))"
+        sunriseLabel.text = "\(timeFormatter.string(from: sunriseDate as Date))"
+        humidityLabel.text = "\(weatherDataModel.humidity)"
+        windSpeedLabel.text = "\(weatherDataModel.windSpeed)"
+        let date = NSDate(timeIntervalSince1970: weatherDataModel.date)
+        let dayTimePeriodFormatter = DateFormatter()
+        dayTimePeriodFormatter.dateFormat = "hh:mm, MMM dd"
+        let dateString = dayTimePeriodFormatter.string(from: date as Date)
+        dateLabel.text = dateString
+        feelsLikeTemperatureLabel.text = "\(weatherDataModel.feelsLike)° / \(weatherDataModel.temperature)°"
+    }
+    
+    //MARK: - Location Manager Delegate Methods
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let location = locations[locations.count - 1]
+        if location.horizontalAccuracy > 0 {
+            
+            locationManager.stopUpdatingLocation()
+            locationManager.delegate = nil
+            
+            print("longitude = \(location.coordinate.longitude), latitude = \(location.coordinate.latitude)")
+            
+            let latitude = String(location.coordinate.latitude)
+            let longitude = String(location.coordinate.longitude)
+            
+            let params: [String : String] = ["lat": latitude, "lon": longitude, "appid": api_key]
+            
+            getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params) {  weather in
+                if let weatherDataModel = weather {
+                    defaults.set(weatherDataModel.lat, forKey: "lat")
+                    defaults.set(weatherDataModel.lon, forKey: "lon")
+                    self.updateUIWithWeatherData()
+                }
+            }
+        }
+    }
+    
+    func configure() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(uiView)
+        scrollView.addSubview(cityLabel)
+
+        scrollView.addSubview(locationButton)
+        scrollView.addSubview(settingsButton)
+
+        scrollView.addSubview(feelsLikeTemperatureLabel)
+        scrollView.addSubview(temperatureLabel)
+        scrollView.addSubview(temperatureDescription)
+        
+        scrollView.addSubview(sunsetLabel)
+        scrollView.addSubview(sunriseLabel)
+        scrollView.addSubview(sunsetImage)
+        scrollView.addSubview(sunriseImage)
+        scrollView.addSubview(humidityLabel)
+        scrollView.addSubview(windSpeedLabel)
+        scrollView.addSubview(dateLabel)
+        
+        scrollView.addSubview(moreFor24Hours)
+        scrollView.addSubview(hourlyCollectionView)
+        scrollView.addSubview(dailyLabel)
+        scrollView.addSubview(daysCountLabel)
+        scrollView.addSubview(temperatureTable)
+        
+        setupLayout()
+    }
+    
+    func setupLayout() {
+        
+        scrollView.snp.makeConstraints { (make) -> Void in
+            make.edges.equalTo(view)
+        }
+        
+        cityLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(scrollView).offset(40)
+            make.centerX.equalTo(scrollView)
+            make.height.equalTo(22)
+        }
+        
+        locationButton.snp.makeConstraints { (make) -> Void in
+            make.centerY.equalTo(cityLabel)
+            make.height.equalTo(40)
+            make.trailing.equalTo(scrollView).offset(-15)
+        }
+        
+        settingsButton.snp.makeConstraints { (make) -> Void in
+            make.centerY.equalTo(cityLabel)
+            make.height.equalTo(40)
+            make.leading.equalTo(scrollView).offset(15)
+        }
+        
+        uiView.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(scrollView).offset(112)
+            make.height.equalTo(212)
+            make.width.equalTo(view.frame.width - 30)
+            make.trailing.equalTo(scrollView).offset(-15)
+            make.leading.equalTo(scrollView).offset(15)
+        }
+        
+        feelsLikeTemperatureLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(uiView).offset(33)
+            make.centerX.equalTo(uiView)
+            make.height.equalTo(20)
+            make.width.equalTo(65)
+        }
+        
+        temperatureLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(uiView).offset(58)
+            make.centerX.equalTo(uiView)
+            make.height.equalTo(60)
+            make.width.equalTo(80)
+        }
+        
+        temperatureDescription.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(temperatureLabel.snp.bottom).offset(5)
+            make.centerX.equalTo(uiView)
+            make.height.equalTo(20)
+        }
+        
+        sunriseLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(uiView.snp.top).offset(167)
+            make.height.equalTo(20)
+            make.leading.equalTo(uiView).offset(17)
+        }
+        
+        sunsetLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(uiView.snp.top).offset(167)
+            make.height.equalTo(20)
+            make.trailing.equalTo(scrollView).offset(-30)
+        }
+        
+        sunriseImage.snp.makeConstraints { (make) -> Void in
+            make.bottom.equalTo(sunriseLabel.snp.top).offset(-5)
+            make.height.equalTo(15)
+            make.width.equalTo(20)
+            make.center.equalTo(sunriseLabel)
+        }
+        
+        sunsetImage.snp.makeConstraints { (make) -> Void in
+            make.bottom.equalTo(sunsetLabel.snp.top).offset(-5)
+            make.height.equalTo(15)
+            make.width.equalTo(20)
+            make.center.equalTo(sunsetLabel)
+        }
+        
+        windSpeedLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(temperatureDescription.snp.bottom).offset(8)
+            make.height.equalTo(20)
+            make.centerX.equalTo(uiView)
+        }
+        
+        humidityLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(temperatureDescription.snp.bottom).offset(8)
+            make.height.equalTo(20)
+            make.leading.equalTo(windSpeedLabel.snp.trailing).offset(10)
+        }
+        
+        dateLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(windSpeedLabel.snp.bottom).offset(10)
+            make.height.equalTo(20)
+            make.centerX.equalTo(uiView)
+        }
+        
+        moreFor24Hours.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(uiView.snp.bottom).offset(20)
+            make.trailing.equalTo(temperatureTable)
+            make.height.equalTo(20)
+        }
+        
+        hourlyCollectionView.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(moreFor24Hours.snp.bottom).offset(10)
+            make.height.equalTo(85)
+            make.leading.equalTo(scrollView).offset(16)
+            make.trailing.equalTo(scrollView).offset(-16)
+        }
+        
+        dailyLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(hourlyCollectionView.snp.bottom).offset(30)
+            make.leading.equalTo(scrollView).offset(16)
+            make.height.equalTo(22)
+        }
+        
+        daysCountLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(dailyLabel)
+            make.height.equalTo(20)
+            make.trailing.equalTo(temperatureTable)
+        }
+        
+        temperatureTable.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(dailyLabel.snp.bottom).offset(10)
+            make.leading.equalTo(scrollView).offset(16)
+            make.trailing.equalTo(scrollView).offset(-16)
+            make.bottom.equalTo(view)
+        }
     }
     
     private lazy var temperatureLabel: UILabel = {
@@ -230,400 +537,16 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
         
         label.textAlignment = .right
         label.attributedText = NSMutableAttributedString(string: "Подробнее на 24 часа", attributes: [NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.kern: 0.16, NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        label.isUserInteractionEnabled = true
+        label.addGestureRecognizer(UITapGestureRecognizer(target:self, action: #selector(tapLabel(gesture:))))
         return label
     }()
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        locationManager.startUpdatingLocation()
-        
-        hourlyCollectionView.isPagingEnabled = true
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        hourlyCollectionView.collectionViewLayout = layout
-        hourlyCollectionView.allowsMultipleSelection = false
-        
-        temperatureTable.toAutoLayout()
-        temperatureTable.dataSource = self
-        temperatureTable.delegate = self
-        temperatureTable.register(DayWithTemperature.self, forCellReuseIdentifier: reuseId)
-
-        view.backgroundColor = .white
-        
-        view.addSubview(scrollView)
-        scrollView.addSubview(uiView)
-        scrollView.addSubview(cityLabel)
-
-        scrollView.addSubview(locationButton)
-        scrollView.addSubview(settingsButton)
-
-        scrollView.addSubview(feelsLikeTemperatureLabel)
-        scrollView.addSubview(temperatureLabel)
-        scrollView.addSubview(temperatureDescription)
-        
-        scrollView.addSubview(sunsetLabel)
-        scrollView.addSubview(sunriseLabel)
-        scrollView.addSubview(sunsetImage)
-        scrollView.addSubview(sunriseImage)
-        scrollView.addSubview(humidityLabel)
-        scrollView.addSubview(windSpeedLabel)
-        scrollView.addSubview(dateLabel)
-        
-        scrollView.addSubview(moreFor24Hours)
-        scrollView.addSubview(hourlyCollectionView)
-        scrollView.addSubview(dailyLabel)
-        scrollView.addSubview(daysCountLabel)
-        scrollView.addSubview(temperatureTable)
-        
-        setupLayout()
-    }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        if let value = defaults.value(forKey: "temperature") {
-            return defaults.set(value as? Bool, forKey: "temperature")
-        } else {
-            defaults.set(true, forKey: "temperature") // true = C, false = F
-        }
-        
-        if let value = defaults.value(forKey: "windSpeed") {
-            return defaults.set(value as? Bool, forKey: "windSpeed")
-        } else {
-            defaults.set(true, forKey: "windSpeed") // true = Mi, false = Km
-        }
-        
-        if let value = defaults.value(forKey: "timeFormat") {
-            return defaults.set(value as? Bool, forKey: "timeFormat")
-        } else {
-            defaults.set(false, forKey: "timeFormat") // true = 12, false = 24
-        }
-        
-        if let value = defaults.value(forKey: "notifications") {
-            return defaults.set(value as? Bool, forKey: "notifications")
-        } else {
-            defaults.set(true, forKey: "notifications") // true = ON, false = OFF
-        }
-
-        if Core.shared.isNewUser() {
-            print("Показываем онбординг новому пользователю")
-            let vc = OnboardViewController()
-            vc.modalPresentationStyle = .fullScreen
-            present(vc, animated: true)
-        }
-    }
-    
-    func setupLayout() {
-        
-        scrollView.snp.makeConstraints { (make) -> Void in
-            make.edges.equalTo(view)
-        }
-        
-        cityLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(scrollView).offset(40)
-            make.centerX.equalTo(scrollView)
-            make.height.equalTo(22)
-        }
-        
-        locationButton.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(cityLabel)
-            make.height.equalTo(40)
-            make.trailing.equalTo(scrollView).offset(-15)
-        }
-        
-        settingsButton.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(cityLabel)
-            make.height.equalTo(40)
-            make.leading.equalTo(scrollView).offset(15)
-        }
-        
-        uiView.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(scrollView).offset(112)
-            make.height.equalTo(212)
-            make.width.equalTo(view.frame.width - 30)
-            make.trailing.equalTo(scrollView).offset(-15)
-            make.leading.equalTo(scrollView).offset(15)
-        }
-        
-        feelsLikeTemperatureLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(uiView).offset(33)
-            make.centerX.equalTo(uiView)
-            make.height.equalTo(20)
-            make.width.equalTo(65)
-        }
-        
-        temperatureLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(uiView).offset(58)
-            make.centerX.equalTo(uiView)
-            make.height.equalTo(60)
-            make.width.equalTo(80)
-        }
-        
-        temperatureDescription.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(temperatureLabel.snp.bottom).offset(5)
-            make.centerX.equalTo(uiView)
-            make.height.equalTo(20)
-        }
-        
-        sunriseLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(uiView.snp.top).offset(167)
-            make.height.equalTo(20)
-            make.leading.equalTo(uiView).offset(17)
-        }
-        
-        sunsetLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(uiView.snp.top).offset(167)
-            make.height.equalTo(20)
-            make.trailing.equalTo(scrollView).offset(-30)
-        }
-        
-        sunriseImage.snp.makeConstraints { (make) -> Void in
-            make.bottom.equalTo(sunriseLabel.snp.top).offset(-5)
-            make.height.equalTo(15)
-            make.width.equalTo(20)
-            make.center.equalTo(sunriseLabel)
-        }
-        
-        sunsetImage.snp.makeConstraints { (make) -> Void in
-            make.bottom.equalTo(sunsetLabel.snp.top).offset(-5)
-            make.height.equalTo(15)
-            make.width.equalTo(20)
-            make.center.equalTo(sunsetLabel)
-        }
-        
-        windSpeedLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(temperatureDescription.snp.bottom).offset(8)
-            make.height.equalTo(20)
-            make.centerX.equalTo(uiView)
-        }
-        
-        humidityLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(temperatureDescription.snp.bottom).offset(8)
-            make.height.equalTo(20)
-            make.leading.equalTo(windSpeedLabel.snp.trailing).offset(10)
-        }
-        
-        dateLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(windSpeedLabel.snp.bottom).offset(10)
-            make.height.equalTo(20)
-            make.centerX.equalTo(uiView)
-        }
-        
-        moreFor24Hours.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(uiView.snp.bottom).offset(20)
-            make.trailing.equalTo(temperatureTable)
-            make.height.equalTo(20)
-        }
-        
-        hourlyCollectionView.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(moreFor24Hours.snp.bottom).offset(10)
-            make.height.equalTo(85)
-            make.leading.equalTo(scrollView).offset(16)
-            make.trailing.equalTo(scrollView).offset(-16)
-        }
-        
-        dailyLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(hourlyCollectionView.snp.bottom).offset(30)
-            make.leading.equalTo(scrollView).offset(16)
-            make.height.equalTo(22)
-        }
-        
-        daysCountLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(dailyLabel)
-            make.height.equalTo(20)
-            make.trailing.equalTo(temperatureTable)
-        }
-        
-        temperatureTable.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(dailyLabel.snp.bottom).offset(10)
-            make.leading.equalTo(scrollView).offset(16)
-            make.trailing.equalTo(scrollView).offset(-16)
-            make.bottom.equalTo(view)
-        }
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        if status == .authorizedAlways || status == .authorizedWhenInUse {
-            if CLLocationManager.isMonitoringAvailable(for: CLBeaconRegion.self) {
-                if CLLocationManager.isRangingAvailable() {
-                    print("do stuff")
-                }
-            }
-        }
-        print("locationManager status: \(status.rawValue)")
-    }
-
-    //MARK: - Networking
-
-    func getWeatherDataOnOneDay(url: String, parameters: [String: String]) {
-        AF.request(url, method: HTTPMethod.get, parameters: parameters).responseJSON { response in
-            
-            switch response.result {
-            case .success(let value):
-                print("Success! Got the weather data")
-                let weatherJSON : JSON = JSON(value)
-                self.updateWeatherData(json: weatherJSON)
-                print("weatherJSON One Day: " + weatherJSON.debugDescription)
-
-            case .failure(let error):
-                print("Error \(error)")
-                self.cityLabel.text = "Connection Issues"
-            }
-        }
-    }
-    
-    func getWeatherDataHourly(url: String, parameters: [String: String]) {
-        AF.request(url, method: HTTPMethod.get, parameters: parameters).responseJSON { response in
-            
-            switch response.result {
-            case .success(let value):
-                print("Success! Got the weather data")
-                let weatherJSON : JSON = JSON(value)
-                self.updateWeatherDataHourly(json: weatherJSON)
-                print("weatherJSON Hourly: " + weatherJSON.debugDescription)
-
-            case .failure(let error):
-                print("Error \(error)")
-                self.cityLabel.text = "Connection Issues"
-            }
-        }
-    }
-    
-    func getWeatherDataOnMonth(url: String, parameters: [String: String]) {
-        AF.request(url, method: HTTPMethod.get, parameters: parameters).responseJSON { response in
-            
-            switch response.result {
-            case .success(let value):
-                print("Success! Got the weather data")
-                let weatherJSON : JSON = JSON(value)
-                self.updateWeatherDataOnMonth(json: weatherJSON)
-                print("weatherJSON On Month: " + weatherJSON.debugDescription)
-
-            case .failure(let error):
-                print("Error \(error)")
-                self.cityLabel.text = "Connection Issues"
-            }
-        }
-    }
-    
-    //MARK: - JSON Parsing
-
-    func updateWeatherData(json: JSON) {
-        
-        if let tempResult = json["main"]["temp"].double {
-        
-        weatherDataModel.temperature = Int(tempResult - 273.15)
-        
-        weatherDataModel.city = json["name"].stringValue
-        
-        weatherDataModel.condition = json["weather"][0]["id"].intValue
-            
-        weatherDataModel.temperatureDescription = json["weather"][0]["description"].stringValue
-            
-        weatherDataModel.sunset = json["sys"]["sunset"].doubleValue
-            
-        weatherDataModel.sunrise = json["sys"]["sunrise"].doubleValue
-            
-        weatherDataModel.clouds = json["clouds"]["all"].intValue
-            
-        weatherDataModel.humidity = json["main"]["humidity"].intValue
-            
-        weatherDataModel.windSpeed = json["wind"]["speed"].floatValue
-            
-        weatherDataModel.date = json["dt"].doubleValue
-            
-        if let feelsLikeResult = json["main"]["feels_like"].double {
-            weatherDataModel.feelsLike = Int(feelsLikeResult - 273.15)
-        }
-        
-        updateUIWithWeatherData()
-        
-        }
-        else {
-            cityLabel.text = "Weather Unavailable"
-        }
-    }
-    
-    func updateWeatherDataHourly(json: JSON) {
-        
-    }
-    
-    func updateWeatherDataOnMonth(json: JSON) {
-        
-    }
-
-    //MARK: - UI Updates
-    
-    func updateUIWithWeatherData() {
-        cityLabel.text = weatherDataModel.city
-        temperatureLabel.text = "\(weatherDataModel.temperature)°"
-        temperatureDescription.text = weatherDataModel.temperatureDescription.capitalizingFirstLetter()
-        
-        let sunsetDate = NSDate(timeIntervalSince1970: weatherDataModel.sunset)
-        let sunriseDate = NSDate(timeIntervalSince1970: weatherDataModel.sunrise)
-        
-        let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "hh:mm"
-        
-        sunsetLabel.text = "\(timeFormatter.string(from: sunsetDate as Date))"
-        sunriseLabel.text = "\(timeFormatter.string(from: sunriseDate as Date))"
-        humidityLabel.text = "\(weatherDataModel.humidity)"
-        windSpeedLabel.text = "\(weatherDataModel.windSpeed)"
-        let date = NSDate(timeIntervalSince1970: weatherDataModel.date)
-        let dayTimePeriodFormatter = DateFormatter()
-        dayTimePeriodFormatter.dateFormat = "hh:mm, MMM dd"
-        let dateString = dayTimePeriodFormatter.string(from: date as Date)
-        dateLabel.text = dateString
-        feelsLikeTemperatureLabel.text = "\(weatherDataModel.feelsLike)° / \(weatherDataModel.temperature)°"
-    }
-    
-    //MARK: - Location Manager Delegate Methods
-
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        
-        let location = locations[locations.count - 1]
-        if location.horizontalAccuracy > 0 {
-            
-            locationManager.stopUpdatingLocation()
-            locationManager.delegate = nil
-            
-            print("longitude = \(location.coordinate.longitude), latitude = \(location.coordinate.latitude)")
-            
-            let latitude = String(location.coordinate.latitude)
-            let longitude = String(location.coordinate.longitude)
-            
-            let params: [String : String] = ["lat": latitude, "lon": longitude, "appid": api_key]
-            
-            getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params)
-//            getWeatherDataHourly(url: WEATHER_URL_HOURLY, parameters: params)
-//            getWeatherDataOnMonth(url: WEATHER_URL_MOUNTH, parameters: params)
-        }
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print(error)
-        cityLabel.text = "Location Unavailable"
-    }
-    
-    //MARK: - Change City Delegate methods
-    
-    func userEnterNewCityName(city: String) {
-        
-        let params : [String : String] = ["q" : city, "appid" : api_key]
-        
-        getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params)
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "findCityWeather" {
-            
-            let destinationVC = segue.destination as! ChangeCityViewController
-            
-            destinationVC.delegate = self
-        }
+    @objc func tapLabel(gesture: UITapGestureRecognizer) {
+        print("Кликнули погоду на 24 часа")
+        let vc = WeatherOn24HoursController(weatherModel: weatherDataModel)
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: true)
     }
 }
 

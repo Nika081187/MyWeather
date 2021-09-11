@@ -6,42 +6,87 @@
 //
 
 import UIKit
+import SnapKit
 
-protocol ChangeCityDelegate {
+class ChangeCityViewController: UIViewController, UITextFieldDelegate {
     
-    func userEnterNewCityName(city: String)
-}
-
-class ChangeCityViewController: UIViewController {
+    private let imageView = UIImageView()
     
-    var delegate : ChangeCityDelegate?
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = UIColor(red: 0.125, green: 0.306, blue: 0.78, alpha: 1)
+        view.addSubview(addCityTextField)
+        view.addSubview(imageView)
+        configureImage()
+        self.addCityTextField.delegate = self
+        
+        addCityTextField.snp.makeConstraints { (make) -> Void in
+            make.centerY.equalTo(view)
+            make.leading.equalTo(view).offset(16)
+            make.trailing.equalTo(view).offset(-16)
+            make.height.equalTo(40)
+        }
+    }
     
     lazy var addCityTextField: UITextField = {
         let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-//        textField.placeholder = "Title *"
-//        textField.keyboardType = UIKeyboardType.default
-//        textField.returnKeyType = UIReturnKeyType.done
-//        textField.autocorrectionType = UITextAutocorrectionType.no
-//        textField.font = UIFont.systemFont(ofSize: 13)
-//        textField.borderStyle = UITextField.BorderStyle.roundedRect
-//        textField.clearButtonMode = UITextField.ViewMode.whileEditing;
-        textField.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
+        textField.backgroundColor = .systemGray6
+        textField.textColor = .black
+        textField.font = UIFont.systemFont(ofSize: 16)
+        textField.tintColor = .black
+        textField.autocapitalizationType = .none
+        textField.layer.borderWidth = 0.5
+        textField.layer.masksToBounds = false
+        textField.layer.borderColor = UIColor.lightGray.cgColor
+        textField.layer.cornerRadius = 10
+        textField.placeholder = "Введите город"
+        
+        let paddingView: UIView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 20))
+        textField.leftView = paddingView
+        textField.leftViewMode = .always
+        textField.toAutoLayout()
+        
         return textField
     }()
-   
-    @IBAction func getWeatherPressed(_ sender: AnyObject) {
+    
+    private func configureImage() {
+        let imageName = "onboard"
+        let image = UIImage(named: imageName)
 
-        let cityName = addCityTextField.text!
-        
-        delegate?.userEnterNewCityName(city: cityName)
+        imageView.image = image;
+        imageView.contentMode = .scaleAspectFit
+        imageView.toAutoLayout()
 
-        self.dismiss(animated: true, completion: nil)
-    }
-
-    @IBAction func backButtonPressed(_ sender: AnyObject) {
-        self.dismiss(animated: true, completion: nil)
+        imageView.snp.makeConstraints { (make) -> Void in
+            make.centerX.equalTo(view)
+            make.top.equalTo(view).offset(40)
+            make.height.equalTo(300)
+            make.width.equalTo(350)
+        }
     }
     
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        performAction()
+        return true
+    }
+
+    func performAction() {
+        print("Ввели город: \(addCityTextField.text!)")
+        
+        let city = addCityTextField.text!
+        
+        let params : [String : String] = ["q" : city, "appid" : api_key]
+        getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params) { weather1 in
+            if let weather = weather1 {
+                print("Показываем погоду локации \(weather.city)")
+                let vc = WeatherViewController(weather: weather)
+                vc.modalPresentationStyle = .fullScreen
+                self.present(vc, animated: true, completion: nil)
+            } else {
+                self.addCityTextField.text = ""
+            }
+        }
+    }
 }
 
