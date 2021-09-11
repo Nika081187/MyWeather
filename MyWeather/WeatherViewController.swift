@@ -123,7 +123,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
             vc.modalPresentationStyle = .fullScreen
             present(vc, animated: true)
         }
-        print("locationManager status: \(status.rawValue)")
+        print("Статус location manager: \(status.rawValue)")
     }
 
     //MARK: - UI Updates

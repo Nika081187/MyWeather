@@ -15,7 +15,7 @@ func getWeatherDataOnOneDay(url: String, parameters: [String: String], completio
     AF.request(url, method: HTTPMethod.get, parameters: parameters).responseJSON { response in
         switch response.result {
         case .success(let value):
-            print("Success! Got the weather data")
+            print("Получили данные о погоде")
             
             let weatherJSON : JSON = JSON(value)
             
@@ -23,17 +23,15 @@ func getWeatherDataOnOneDay(url: String, parameters: [String: String], completio
                 completion(nil)
             } else {
                 let weather = updateWeatherData(json: weatherJSON)
-                print("weatherJSON One Day: " + weatherJSON.debugDescription)
+                print("Погода на день JSON: " + weatherJSON.debugDescription)
                 completion(weather)
             }
         case .failure(let error):
-            print("Error weatherJSON \(error)")
+            print("Ошибка при запросе на получение погоды \(error)")
             completion(nil)
         }
     }
 }
-
-//MARK: - JSON Parsing
 
 func updateWeatherData(json: JSON) -> WeatherDatamodel? {
     if let tempResult = json["main"]["temp"].double, let feelsLikeResult = json["main"]["feels_like"].double {
