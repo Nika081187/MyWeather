@@ -22,6 +22,7 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
     private let imageView = UIImageView()
     private let allowLocationButton = UIButton()
     private let rejectLocationButton = UIButton()
+    private var needResetLocations: Bool = false
     
     private var locationManager: CLLocationManager?
     
@@ -39,6 +40,19 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
         return view
     }()
     
+    init(needResetLocations: Bool = false) {
+        super.init(nibName: nil, bundle: nil)
+        self.needResetLocations = needResetLocations
+    }
+    
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = commonColor
@@ -46,7 +60,7 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
         locationManager = CLLocationManager()
         locationManager?.delegate = self
         locationManager?.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        locationManager?.startUpdatingLocation()
+
         configure()
     }
     
@@ -54,9 +68,45 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
         print("Запрашиваем разрешение на локацию")
         Core.shared.setIsNotNewUser()
         locationManager?.requestWhenInUseAuthorization()
-        let vc = WeatherViewController()
-        vc.modalPresentationStyle = .fullScreen
-        present(vc, animated: true, completion: nil)
+
+        needResetLocations = false
+        if locationManager?.authorizationStatus == .authorizedAlways || locationManager?.authorizationStatus == .authorizedWhenInUse {
+            locationManager?.startUpdatingLocation()
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if !needResetLocations {
+            if status == .authorizedAlways || status == .authorizedWhenInUse {
+                locationManager?.startUpdatingLocation()
+            }
+        }
+        print("Статус location manager: \(status.rawValue)")
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let location = locations[locations.count - 1]
+        if location.horizontalAccuracy > 0 {
+
+            locationManager?.stopUpdatingLocation()
+            locationManager?.delegate = nil
+            
+            let latitude = String(location.coordinate.latitude)
+            let longitude = String(location.coordinate.longitude)
+            
+            let params: [String : String] = ["lat": latitude, "lon": longitude, "appid": api_key]
+
+            getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params) {  weather in
+                if let weatherDataModel = weather {
+                    defaults.set(weatherDataModel.lat, forKey: "lat")
+                    defaults.set(weatherDataModel.lon, forKey: "lon")
+                    
+                    let vc = WeatherViewController(weather: weatherDataModel)
+                    vc.modalPresentationStyle = .fullScreen
+                    self.present(vc, animated: true, completion: nil)
+                }
+            }
+        }
     }
     
     @objc func rejectButtonClicked() {

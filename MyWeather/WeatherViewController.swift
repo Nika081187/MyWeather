@@ -53,8 +53,10 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         locationManager.delegate = self
         
         if let lat = defaults.value(forKey: "lat"), let lon = defaults.value(forKey: "lon") {
+            print("11111")
             let params: [String : String] = ["lat": "\(lat)", "lon": "\(lon)", "appid": api_key]
             getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params) {  weather in
+                print("222222")
                 self.weatherDataModel = weather!
                 self.updateUIWithWeatherData()
             }
@@ -73,6 +75,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
 
         view.backgroundColor = .white
         configure()
+        print("3")
     }
     
     override func viewDidLayoutSubviews() {
@@ -111,12 +114,16 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        print("4")
         if let _ = defaults.value(forKey: "lat"), let _ = defaults.value(forKey: "lon") {
+            print("5")
             return
         }
+        print("6")
         
         if status != .notDetermined || !weatherDataModel.city.isEmpty {
             updateUIWithWeatherData()
+            print("7")
         } else if Core.shared.isNewUser() {
             print("Показываем онбординг новому пользователю")
             let vc = OnboardViewController()
@@ -154,6 +161,10 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         hourlyCollectionView.reloadData()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        updateUIWithWeatherData()
+    }
+    
     //MARK: - Location Manager Delegate Methods
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -169,9 +180,11 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
             let longitude = String(location.coordinate.longitude)
             
             let params: [String : String] = ["lat": latitude, "lon": longitude, "appid": api_key]
-            
+            print("======8")
             getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params) {  weather in
+                print("======10")
                 if let weatherDataModel = weather {
+                    print("======9")
                     defaults.set(weatherDataModel.lat, forKey: "lat")
                     defaults.set(weatherDataModel.lon, forKey: "lon")
                     self.updateUIWithWeatherData()
@@ -366,7 +379,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     @objc func locationButtonClicked() {
         print("Нажали кнопку locationButton")
-        let vc = OnboardViewController()
+        let vc = OnboardViewController(needResetLocations: true)
         vc.modalPresentationStyle = .fullScreen
         present(vc, animated: true, completion: nil)
     }
