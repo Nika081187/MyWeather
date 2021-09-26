@@ -159,7 +159,7 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     private func configureAllowButtonLocation() {
-        allowLocationButton.setTitle("использовать местоположение устройства", for: .normal)
+        allowLocationButton.setTitle("ИСПОЛЬЗОВАТЬ МЕСТОПОЛОЖЕНИЕ УСТРОЙСТВА", for: .normal)
         allowLocationButton.backgroundColor = UIColor(red: 0.95, green: 0.43, blue: 0.07, alpha: 1.00)
         allowLocationButton.layer.cornerRadius = 15
         allowLocationButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
