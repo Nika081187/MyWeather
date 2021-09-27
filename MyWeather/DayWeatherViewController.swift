@@ -10,7 +10,7 @@ import UIKit
 class DayWeatherViewController: UIViewController {
     
     var dayNumber: Int
-    var weatherDataModel: WeatherDatamodel
+    var weatherDataModel: WeatherDatamodelOneDay
     
     private lazy var scrollView: UIScrollView = {
         let scroll = UIScrollView()
@@ -78,7 +78,7 @@ class DayWeatherViewController: UIViewController {
         present(vc, animated: false, completion: nil)
     }
     
-    init(weatherModel: WeatherDatamodel, day: Int) {
+    init(weatherModel: WeatherDatamodelOneDay, day: Int) {
         self.dayNumber = day
         self.weatherDataModel = weatherModel
         super.init(nibName: nil, bundle: nil)

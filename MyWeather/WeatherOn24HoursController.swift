@@ -9,7 +9,7 @@ import UIKit
 
 class WeatherOn24HoursController: UIViewController {
     
-    var weatherDataModel: WeatherDatamodel
+    var weatherDataModel: WeatherDatamodelOneDay
     
     private let temperatureTable = UITableView(frame: .infinite, style: .plain)
     
@@ -50,7 +50,7 @@ class WeatherOn24HoursController: UIViewController {
         return scroll
     }()
     
-    init(weatherModel: WeatherDatamodel) {
+    init(weatherModel: WeatherDatamodelOneDay) {
         self.weatherDataModel = weatherModel
         super.init(nibName: nil, bundle: nil)
     }

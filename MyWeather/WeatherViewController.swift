@@ -13,14 +13,14 @@ import SwiftyJSON
 
 let api_key = "d1706e13c1806a01f0e2155432f125a8"
 let WEATHER_URL_ONE_DAY = "http://api.openweathermap.org/data/2.5/weather"
-//let WEATHER_URL_HOURLY = "http://api.openweathermap.org/data/2.5/forecast/hourly"
-//let WEATHER_URL_MOUNTH = "http://api.openweathermap.org/data/2.5/forecast/climate"
+let WEATHER_URL_HOURLY = "https://api.openweathermap.org/data/2.5/onecall?exclude=current,minutely,daily,alerts&"
+let WEATHER_URL_MOUNTH = "https://api.openweathermap.org/data/2.5/onecall?exclude=current,minutely,hourly,alerts&"
 
 class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     private let locationManager = CLLocationManager()
     
-    private var weatherDataModel = WeatherDatamodel()
+    private var weatherDataModel = WeatherDatamodelOneDay()
     
     private let temperatureTable = UITableView(frame: .infinite, style: .plain)
     
@@ -30,7 +30,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         String(describing: DayWithTemperature.self)
     }
     
-    init(weather: WeatherDatamodel) {
+    init(weather: WeatherDatamodelOneDay) {
         super.init(nibName: nil, bundle: nil)
         self.weatherDataModel = weather
         defaults.set(weather.lat, forKey: "lat")
@@ -156,8 +156,17 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         let dateString = dayTimePeriodFormatter.string(from: date as Date)
         dateLabel.text = dateString
         feelsLikeTemperatureLabel.text = "\(weatherDataModel.feelsLike)° / \(weatherDataModel.temperature)°"
+    }
+    
+    func updateTableData() {
+        //
         
         temperatureTable.reloadData()
+    }
+    
+    func updateCollectionViewData() {
+        //
+        
         hourlyCollectionView.reloadData()
     }
     
@@ -182,12 +191,37 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
             let params: [String : String] = ["lat": latitude, "lon": longitude, "appid": api_key]
             print("======8")
             getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params) {  weather in
-                print("======10")
+                print("======88")
                 if let weatherDataModel = weather {
-                    print("======9")
+                    print("======888")
                     defaults.set(weatherDataModel.lat, forKey: "lat")
                     defaults.set(weatherDataModel.lon, forKey: "lon")
+                    // check if need
+                    self.weatherDataModel = weather!
                     self.updateUIWithWeatherData()
+                }
+            }
+            getWeatherDataMonthly(url: WEATHER_URL_MOUNTH, parameters: params) {  weather in
+                print("======9")
+                if let weatherDataModel = weather {
+                    print("======999")
+                    defaults.set(weatherDataModel.lat, forKey: "lat")
+                    defaults.set(weatherDataModel.lon, forKey: "lon")
+                    // check if need
+                    //self.weatherDatamodelMonthly = weather!
+                    self.updateTableData()
+                }
+            }
+            
+            getWeatherDataHourly(url: WEATHER_URL_MOUNTH, parameters: params) {  weather in
+                print("======10")
+                if let weatherDataModel = weather {
+                    print("======101010")
+                    defaults.set(weatherDataModel.lat, forKey: "lat")
+                    defaults.set(weatherDataModel.lon, forKey: "lon")
+                    // check if need
+                    //self.weatherDatamodelMonthly = weather!
+                    self.updateCollectionViewData()
                 }
             }
         }

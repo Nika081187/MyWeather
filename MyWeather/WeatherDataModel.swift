@@ -8,7 +8,7 @@
 import UIKit
 
 
-class WeatherDatamodel {
+class WeatherDatamodelOneDay {
     
     var temperature: Int = 0
     var temperatureDescription: String = ""
@@ -26,5 +26,38 @@ class WeatherDatamodel {
     var clouds: Int = 0
     var lon: Float = 0.0
     var lat: Float = 0.0
+}
+
+class Hour {
+    var date: Double = 0
+    var temperature: Int = 0
+    var feelsLike: Int = 0
+    var windSpeed: Float = 0.0
+    var humidity: Int = 0
+    var clouds: Int = 0
+}
+
+class WeatherDatamodelHourly {
+    var lon: Float = 0.0
+    var lat: Float = 0.0
+    var hourly: [Hour] = []
+}
+
+class Day {
+    var date: Double = 0
+    var temperatureDay: Int = 0
+    var temperatureNight: Int = 0
+    var feelsLikeDay: Int = 0
+    var feelsLikeNight: Int = 0
+    var windSpeed: Float = 0.0
+    var humidity: Int = 0
+    var clouds: Int = 0
+    var weatherDescr: String = ""
+}
+
+class WeatherDatamodelMonthly {
+    var lon: Float = 0.0
+    var lat: Float = 0.0
+    var days: [Day] = []
 }
 
