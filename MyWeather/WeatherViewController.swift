@@ -20,7 +20,9 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     private let locationManager = CLLocationManager()
     
-    private var weatherDataModel = WeatherDatamodelOneDay()
+    private var weatherDataModelOneDay = WeatherDatamodelOneDay()
+    private var weatherDatamodelMonthly = WeatherDatamodelMonthly()
+    private var weatherDataModelHourly = WeatherDatamodelHourly()
     
     private let temperatureTable = UITableView(frame: .infinite, style: .plain)
     
@@ -32,7 +34,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     init(weather: WeatherDatamodelOneDay) {
         super.init(nibName: nil, bundle: nil)
-        self.weatherDataModel = weather
+        self.weatherDataModelOneDay = weather
         defaults.set(weather.lat, forKey: "lat")
         defaults.set(weather.lon, forKey: "lon")
         updateUIWithWeatherData()
@@ -55,10 +57,36 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         if let lat = defaults.value(forKey: "lat"), let lon = defaults.value(forKey: "lon") {
             print("11111")
             let params: [String : String] = ["lat": "\(lat)", "lon": "\(lon)", "appid": api_key]
+
             getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params) {  weather in
-                print("222222")
-                self.weatherDataModel = weather!
-                self.updateUIWithWeatherData()
+                print("======88")
+                if let weatherDataModel = weather {
+                    print("======888")
+                    defaults.set(weatherDataModel.lat, forKey: "lat")
+                    defaults.set(weatherDataModel.lon, forKey: "lon")
+                    // check if need
+                    self.weatherDataModelOneDay = weatherDataModel
+                    self.updateUIWithWeatherData()
+                }
+            }
+            getWeatherDataMonthly(url: WEATHER_URL_MOUNTH, parameters: params) {  weather in
+                print("======9")
+                if let weatherDataModel = weather {
+                    print("======999")
+                    // check if need
+                    self.weatherDatamodelMonthly = weatherDataModel
+                    self.updateTableData()
+                }
+            }
+            
+            getWeatherDataHourly(url: WEATHER_URL_HOURLY, parameters: params) {  weather in
+                print("======10")
+                if let weatherDataModel = weather {
+                    print("======101010")
+                    // check if need
+                    self.weatherDataModelHourly = weatherDataModel
+                    self.updateCollectionViewData()
+                }
             }
         }
         
@@ -121,7 +149,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         }
         print("6")
         
-        if status != .notDetermined || !weatherDataModel.city.isEmpty {
+        if status != .notDetermined || !weatherDataModelOneDay.city.isEmpty {
             updateUIWithWeatherData()
             print("7")
         } else if Core.shared.isNewUser() {
@@ -136,26 +164,26 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     //MARK: - UI Updates
     
     func updateUIWithWeatherData() {
-        cityLabel.text = weatherDataModel.city
-        temperatureLabel.text = "\(weatherDataModel.temperature)°"
-        temperatureDescription.text = weatherDataModel.temperatureDescription.capitalizingFirstLetter()
+        cityLabel.text = weatherDataModelOneDay.city
+        temperatureLabel.text = "\(weatherDataModelOneDay.temperature)°"
+        temperatureDescription.text = weatherDataModelOneDay.temperatureDescription.capitalizingFirstLetter()
         
-        let sunsetDate = NSDate(timeIntervalSince1970: weatherDataModel.sunset)
-        let sunriseDate = NSDate(timeIntervalSince1970: weatherDataModel.sunrise)
+        let sunsetDate = NSDate(timeIntervalSince1970: weatherDataModelOneDay.sunset)
+        let sunriseDate = NSDate(timeIntervalSince1970: weatherDataModelOneDay.sunrise)
         
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "hh:mm"
         
         sunsetLabel.text = "\(timeFormatter.string(from: sunsetDate as Date))"
         sunriseLabel.text = "\(timeFormatter.string(from: sunriseDate as Date))"
-        humidityLabel.text = "\(weatherDataModel.humidity)"
-        windSpeedLabel.text = "\(weatherDataModel.windSpeed)"
-        let date = NSDate(timeIntervalSince1970: weatherDataModel.date)
+        humidityLabel.text = "\(weatherDataModelOneDay.humidity)"
+        windSpeedLabel.text = "\(weatherDataModelOneDay.windSpeed)"
+        let date = NSDate(timeIntervalSince1970: weatherDataModelOneDay.date)
         let dayTimePeriodFormatter = DateFormatter()
         dayTimePeriodFormatter.dateFormat = "hh:mm, MMM dd"
         let dateString = dayTimePeriodFormatter.string(from: date as Date)
         dateLabel.text = dateString
-        feelsLikeTemperatureLabel.text = "\(weatherDataModel.feelsLike)° / \(weatherDataModel.temperature)°"
+        feelsLikeTemperatureLabel.text = "\(weatherDataModelOneDay.feelsLike)° / \(weatherDataModelOneDay.temperature)°"
     }
     
     func updateTableData() {
@@ -197,7 +225,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
                     defaults.set(weatherDataModel.lat, forKey: "lat")
                     defaults.set(weatherDataModel.lon, forKey: "lon")
                     // check if need
-                    self.weatherDataModel = weather!
+                    self.weatherDataModelOneDay = weatherDataModel
                     self.updateUIWithWeatherData()
                 }
             }
@@ -205,22 +233,18 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
                 print("======9")
                 if let weatherDataModel = weather {
                     print("======999")
-                    defaults.set(weatherDataModel.lat, forKey: "lat")
-                    defaults.set(weatherDataModel.lon, forKey: "lon")
                     // check if need
-                    //self.weatherDatamodelMonthly = weather!
+                    self.weatherDatamodelMonthly = weatherDataModel
                     self.updateTableData()
                 }
             }
             
-            getWeatherDataHourly(url: WEATHER_URL_MOUNTH, parameters: params) {  weather in
+            getWeatherDataHourly(url: WEATHER_URL_HOURLY, parameters: params) {  weather in
                 print("======10")
                 if let weatherDataModel = weather {
                     print("======101010")
-                    defaults.set(weatherDataModel.lat, forKey: "lat")
-                    defaults.set(weatherDataModel.lon, forKey: "lon")
                     // check if need
-                    //self.weatherDatamodelMonthly = weather!
+                    self.weatherDataModelHourly = weatherDataModel
                     self.updateCollectionViewData()
                 }
             }
@@ -594,7 +618,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     @objc func tapLabel(gesture: UITapGestureRecognizer) {
         print("Кликнули погоду на 24 часа")
-        let vc = WeatherOn24HoursController(weatherModel: weatherDataModel)
+        let vc = WeatherOn24HoursController(weatherModel: weatherDataModelOneDay)
         vc.modalPresentationStyle = .fullScreen
         present(vc, animated: true)
     }
@@ -616,7 +640,7 @@ extension WeatherViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-          return 8
+        return weatherDataModelHourly.hourly.count / 3
        }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -624,7 +648,16 @@ extension WeatherViewController: UICollectionViewDataSource {
 
         let image = UIImage(systemName: "sun.max")!
         let sectionNumber = indexPath.row * 3
-        cell.configure(image: image, temperature: weatherDataModel.temperature, hour: "\(0 + sectionNumber):00")
+        if weatherDataModelHourly.hourly.count == 0 {
+            return cell
+        }
+        
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        
+        let hour = "\(timeFormatter.string(from: Date(timeIntervalSince1970: weatherDataModelHourly.hourly[sectionNumber].date)))"
+
+        cell.configure(image: image, temperature: weatherDataModelHourly.hourly[sectionNumber].temperature, hour: "\(hour)")
         return cell
     }
 }
@@ -645,14 +678,28 @@ extension WeatherViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
+
 extension WeatherViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: DayWithTemperature = tableView.dequeueReusableCell(withIdentifier: reuseId, for: indexPath) as! DayWithTemperature
-        cell.configure(description: "\(weatherDataModel.temperatureDescription.capitalizingFirstLetter())", data: "\(indexPath.section + 1)/12", humidity: 56, temperature: "\(weatherDataModel.feelsLike)°")
         cell.toAutoLayout()
         cell.layer.cornerRadius = 5
         cell.clipsToBounds = true
+        
+        if weatherDatamodelMonthly.days.count == 0 {
+            return cell
+        }
+        
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "dd.MM"
+        
+        let data = "\(timeFormatter.string(from: Date(timeIntervalSince1970: weatherDatamodelMonthly.days[indexPath.section].date)))"
+        
+        cell.configure(description: "\(weatherDatamodelMonthly.days[indexPath.section].weatherDescr.capitalizingFirstLetter())",
+                       data: data,
+                       humidity: weatherDatamodelMonthly.days[indexPath.section].humidity,
+                       temperature: "\(weatherDatamodelMonthly.days[indexPath.section].temperatureDay)°")
         return cell
     }
 }
@@ -664,7 +711,7 @@ extension WeatherViewController: UITableViewDelegate {
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 25
+        return weatherDatamodelMonthly.days.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -683,7 +730,7 @@ extension WeatherViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("Выбрали день: \(indexPath.item + 1)")
-        let vc = DayWeatherViewController(weatherModel: weatherDataModel, day: indexPath.item + 1)
+        let vc = DayWeatherViewController(weatherModel: weatherDataModelOneDay, day: indexPath.item + 1)
         vc.modalPresentationStyle = .fullScreen
         present(vc, animated: true)
     }

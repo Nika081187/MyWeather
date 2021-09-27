@@ -105,6 +105,7 @@ func updateWeatherDataHourly(json: JSON) -> WeatherDatamodelHourly? {
     res.lon = json["lon"].floatValue
     res.lat = json["lat"].floatValue
     for (_,item) in json["hourly"] {
+        if res.hourly.count == 24 { break }
         let hour = Hour()
         hour.date = item["dt"].doubleValue
         hour.temperature = Int(item["temp"].doubleValue - 273.15)
