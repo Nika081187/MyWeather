@@ -9,9 +9,10 @@ import UIKit
 
 class WeatherOn24HoursController: UIViewController {
     
-    var weatherDataModel: WeatherDatamodelOneDay
+    var weatherDataModel: WeatherDatamodelHourly
     
     private let temperatureTable = UITableView(frame: .infinite, style: .plain)
+    private var city: String
     
     private var reuseId: String {
         String(describing: WeatherOn24HoursCell.self)
@@ -50,8 +51,9 @@ class WeatherOn24HoursController: UIViewController {
         return scroll
     }()
     
-    init(weatherModel: WeatherDatamodelOneDay) {
+    init(weatherModel: WeatherDatamodelHourly, city: String) {
         self.weatherDataModel = weatherModel
+        self.city = city
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -69,7 +71,7 @@ class WeatherOn24HoursController: UIViewController {
         temperatureTable.allowsSelection = false
         temperatureTable.register(WeatherOn24HoursCell.self, forCellReuseIdentifier: reuseId)
         
-        cityLabel.text = weatherDataModel.city
+        cityLabel.text = city
         
         view.addSubview(scrollView)
         scrollView.addSubview(backButton)
@@ -110,20 +112,24 @@ extension WeatherOn24HoursController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: WeatherOn24HoursCell = tableView.dequeueReusableCell(withIdentifier: reuseId, for: indexPath) as! WeatherOn24HoursCell
-        
-        let date = NSDate(timeIntervalSince1970: weatherDataModel.date)
-        let dayTimePeriodFormatter = DateFormatter()
-        dayTimePeriodFormatter.dateFormat = "MMM / dd"
-        let dateString = dayTimePeriodFormatter.string(from: date as Date)
-        
+
         let sectionNumber = indexPath.section * 3
+        let date = NSDate(timeIntervalSince1970: weatherDataModel.hourly[sectionNumber].date)
+        let dayTimePeriodFormatter1 = DateFormatter()
+        dayTimePeriodFormatter1.dateFormat = "MMM / dd"
+        let dateString = dayTimePeriodFormatter1.string(from: date as Date)
+        
+        let dayTimePeriodFormatter2 = DateFormatter()
+        dayTimePeriodFormatter2.dateFormat = "hh : mm"
+        let timeString = dayTimePeriodFormatter2.string(from: date as Date)
+
         cell.configure(date: dateString,
-                       temperature: weatherDataModel.temperature,
-                       hour:  "\(0 + sectionNumber):00",
-                       feelsLike: weatherDataModel.feelsLike,
-                       windSpeed: "\(weatherDataModel.windSpeed) m\\s",
-                       humidity: "\(weatherDataModel.humidity) %",
-                       clouds: "\(weatherDataModel.clouds) %")
+                       temperature: weatherDataModel.hourly[sectionNumber].temperature,
+                       hour:  "\(timeString)",
+                       feelsLike: weatherDataModel.hourly[sectionNumber].feelsLike,
+                       windSpeed: "\(weatherDataModel.hourly[sectionNumber].windSpeed) m\\s",
+                       humidity: "\(weatherDataModel.hourly[sectionNumber].humidity) %",
+                       clouds: "\(weatherDataModel.hourly[sectionNumber].clouds) %")
         cell.toAutoLayout()
         return cell
     }
@@ -136,7 +142,7 @@ extension WeatherOn24HoursController: UITableViewDelegate {
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 8
+        return weatherDataModel.hourly.count / 3
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

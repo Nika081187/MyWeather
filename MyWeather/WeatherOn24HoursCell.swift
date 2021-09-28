@@ -222,7 +222,7 @@ class WeatherOn24HoursCell: UITableViewCell {
         
         // По ощущениям
         feelsLikeImageView.snp.makeConstraints { (make) -> Void in
-            make.leading.equalTo(hourLabel).offset(40)
+            make.leading.equalTo(hourLabel).offset(50)
             make.centerY.equalTo(hourLabel)
             make.height.equalTo(20)
             make.width.equalTo(20)

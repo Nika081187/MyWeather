@@ -10,7 +10,8 @@ import UIKit
 class DayWeatherViewController: UIViewController {
     
     var dayNumber: Int
-    var weatherDataModel: WeatherDatamodelOneDay
+    var weatherDataModel: WeatherDatamodelMonthly
+    var city: String
     
     private lazy var scrollView: UIScrollView = {
         let scroll = UIScrollView()
@@ -78,9 +79,10 @@ class DayWeatherViewController: UIViewController {
         present(vc, animated: false, completion: nil)
     }
     
-    init(weatherModel: WeatherDatamodelOneDay, day: Int) {
+    init(weatherModel: WeatherDatamodelMonthly, day: Int, city: String) {
         self.dayNumber = day
         self.weatherDataModel = weatherModel
+        self.city = city
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -120,12 +122,14 @@ class DayWeatherViewController: UIViewController {
         
         addDayView()
         addNightView()
+        dayUiView.accessibilityIdentifier = "day"
+        nightUiView.accessibilityIdentifier = "night"
         makeUiView(dayUiView)
         makeUiView(nightUiView)
     }
     
     func addDayView() {
-        cityLabel.text = weatherDataModel.city
+        cityLabel.text = city
         dayTimeLabel.text = "День"
         
         dayUiView.snp.makeConstraints { (make) -> Void in
@@ -166,7 +170,12 @@ class DayWeatherViewController: UIViewController {
         let temperatureLabel = UILabel()
         temperatureLabel.toAutoLayout()
         temperatureLabel.font = UIFont.systemFont(ofSize: 30)
-        temperatureLabel.text = "\(weatherDataModel.temperature)°"
+        if viewToTheDay.accessibilityIdentifier!.contains("day") {
+            temperatureLabel.text = "\(weatherDataModel.days[dayNumber].temperatureDay)°"
+        } else {
+            temperatureLabel.text = "\(weatherDataModel.days[dayNumber].temperatureNight)°"
+        }
+
         scrollView.addSubview(temperatureLabel)
         
         temperatureLabel.snp.makeConstraints { (make) -> Void in
@@ -180,7 +189,7 @@ class DayWeatherViewController: UIViewController {
         let temperatureDescriptionLabel = UILabel()
         temperatureDescriptionLabel.toAutoLayout()
         temperatureDescriptionLabel.font = UIFont.systemFont(ofSize: 18)
-        temperatureDescriptionLabel.text = "\(weatherDataModel.temperatureDescription)"
+        temperatureDescriptionLabel.text = "\(weatherDataModel.days[dayNumber].weatherDescr)"
         scrollView.addSubview(temperatureDescriptionLabel)
         
         temperatureDescriptionLabel.snp.makeConstraints { (make) -> Void in
@@ -298,7 +307,12 @@ class DayWeatherViewController: UIViewController {
         let feelsLikeValueLabel = UILabel()
         feelsLikeValueLabel.toAutoLayout()
         feelsLikeValueLabel.font = UIFont.systemFont(ofSize: 14)
-        feelsLikeValueLabel.text = "\(weatherDataModel.feelsLike)°"
+        if viewToTheDay.accessibilityIdentifier!.contains("day") {
+            feelsLikeValueLabel.text = "\(weatherDataModel.days[dayNumber].feelsLikeDay)°"
+        } else {
+            feelsLikeValueLabel.text = "\(weatherDataModel.days[dayNumber].feelsLikeNight)°"
+        }
+        
         scrollView.addSubview(feelsLikeValueLabel)
         
         feelsLikeValueLabel.snp.makeConstraints { (make) -> Void in
@@ -312,7 +326,8 @@ class DayWeatherViewController: UIViewController {
         let windSpeedValueLabel = UILabel()
         windSpeedValueLabel.toAutoLayout()
         windSpeedValueLabel.font = UIFont.systemFont(ofSize: 14)
-        windSpeedValueLabel.text = "\(weatherDataModel.windSpeed) m\\s"
+        windSpeedValueLabel.text = "\(weatherDataModel.days[dayNumber].windSpeed) m\\s"
+        
         scrollView.addSubview(windSpeedValueLabel)
         
         windSpeedValueLabel.snp.makeConstraints { (make) -> Void in
@@ -326,7 +341,7 @@ class DayWeatherViewController: UIViewController {
         let humidityValueLabel = UILabel()
         humidityValueLabel.toAutoLayout()
         humidityValueLabel.font = UIFont.systemFont(ofSize: 14)
-        humidityValueLabel.text = "\(weatherDataModel.humidity) %"
+        humidityValueLabel.text = "\(weatherDataModel.days[dayNumber].humidity) %"
         scrollView.addSubview(humidityValueLabel)
         
         humidityValueLabel.snp.makeConstraints { (make) -> Void in
@@ -340,7 +355,7 @@ class DayWeatherViewController: UIViewController {
         let cloudsValueLabel = UILabel()
         cloudsValueLabel.toAutoLayout()
         cloudsValueLabel.font = UIFont.systemFont(ofSize: 14)
-        cloudsValueLabel.text = "\(weatherDataModel.clouds) %"
+        cloudsValueLabel.text = "\(weatherDataModel.days[dayNumber].clouds) %"
         scrollView.addSubview(cloudsValueLabel)
         
         cloudsValueLabel.snp.makeConstraints { (make) -> Void in

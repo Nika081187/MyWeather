@@ -274,7 +274,6 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         scrollView.addSubview(moreFor24Hours)
         scrollView.addSubview(hourlyCollectionView)
         scrollView.addSubview(dailyLabel)
-        scrollView.addSubview(daysCountLabel)
         scrollView.addSubview(temperatureTable)
         
         setupLayout()
@@ -393,12 +392,6 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
             make.top.equalTo(hourlyCollectionView.snp.bottom).offset(30)
             make.leading.equalTo(scrollView).offset(16)
             make.height.equalTo(22)
-        }
-        
-        daysCountLabel.snp.makeConstraints { (make) -> Void in
-            make.top.equalTo(dailyLabel)
-            make.height.equalTo(20)
-            make.trailing.equalTo(temperatureTable)
         }
         
         temperatureTable.snp.makeConstraints { (make) -> Void in
@@ -583,22 +576,6 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         return label
     }()
     
-    lazy var daysCountLabel: UILabel = {
-        var label = UILabel()
-
-        label.frame = CGRect(x: 0, y: 0, width: 83, height: 20)
-        label.backgroundColor = .white
-        label.textColor = UIColor(red: 0.154, green: 0.152, blue: 0.135, alpha: 1)
-        label.font = UIFont(name: "Rubik-Regular", size: 16)
-
-        var paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineHeightMultiple = 1.05
-
-        label.textAlignment = .right
-        label.attributedText = NSMutableAttributedString(string: "25 дней", attributes: [NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue, NSAttributedString.Key.kern: 0.16, NSAttributedString.Key.paragraphStyle: paragraphStyle])
-        return label
-    }()
-    
     private lazy var moreFor24Hours: UILabel = {
         let label = UILabel()
         label.frame = CGRect(x: 0, y: 0, width: 174, height: 20)
@@ -618,7 +595,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     @objc func tapLabel(gesture: UITapGestureRecognizer) {
         print("Кликнули погоду на 24 часа")
-        let vc = WeatherOn24HoursController(weatherModel: weatherDataModelOneDay)
+        let vc = WeatherOn24HoursController(weatherModel: weatherDataModelHourly, city: weatherDataModelOneDay.city)
         vc.modalPresentationStyle = .fullScreen
         present(vc, animated: true)
     }
@@ -730,7 +707,7 @@ extension WeatherViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("Выбрали день: \(indexPath.item + 1)")
-        let vc = DayWeatherViewController(weatherModel: weatherDataModelOneDay, day: indexPath.item + 1)
+        let vc = DayWeatherViewController(weatherModel: weatherDatamodelMonthly, day: indexPath.item + 1, city: weatherDataModelOneDay.city)
         vc.modalPresentationStyle = .fullScreen
         present(vc, animated: true)
     }
