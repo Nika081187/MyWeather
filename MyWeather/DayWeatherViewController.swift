@@ -12,10 +12,10 @@ class DayWeatherViewController: UIViewController {
     var dayNumber: Int
     var weatherDataModel: WeatherDatamodelMonthly
     var city: String
+    var sunrise: Double
     
     private lazy var scrollView: UIScrollView = {
         let scroll = UIScrollView()
-        scroll.contentSize = CGSize(width: 400, height: 800)
         scroll.toAutoLayout()
         return scroll
     }()
@@ -79,10 +79,11 @@ class DayWeatherViewController: UIViewController {
         present(vc, animated: false, completion: nil)
     }
     
-    init(weatherModel: WeatherDatamodelMonthly, day: Int, city: String) {
+    init(weatherModel: WeatherDatamodelMonthly, day: Int, city: String, sunrise: Double) {
         self.dayNumber = day
         self.weatherDataModel = weatherModel
         self.city = city
+        self.sunrise = sunrise
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -101,6 +102,10 @@ class DayWeatherViewController: UIViewController {
         scrollView.addSubview(dayTimeLabel)
         scrollView.addSubview(nightUiView)
         scrollView.addSubview(nightTimeLabel)
+        
+        let moonView = MoonView(weatherDatamodel: weatherDataModel.days[dayNumber], sunrise: sunrise)
+        
+        scrollView.addSubview(moonView)
         
         scrollView.snp.makeConstraints { (make) -> Void in
             make.edges.equalTo(view)
@@ -122,6 +127,14 @@ class DayWeatherViewController: UIViewController {
         
         addDayView()
         addNightView()
+        
+        moonView.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(nightUiView.snp.bottom).offset(20)
+            make.height.equalTo(200)
+            make.width.equalTo(scrollView)
+            make.bottom.equalTo(scrollView)
+        }
+        
         dayUiView.accessibilityIdentifier = "day"
         nightUiView.accessibilityIdentifier = "night"
         makeUiView(dayUiView)

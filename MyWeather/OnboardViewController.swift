@@ -212,7 +212,7 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
         allowLocationButton.setTitle("ИСПОЛЬЗОВАТЬ МЕСТОПОЛОЖЕНИЕ УСТРОЙСТВА", for: .normal)
         allowLocationButton.backgroundColor = UIColor(red: 0.95, green: 0.43, blue: 0.07, alpha: 1.00)
         allowLocationButton.layer.cornerRadius = 15
-        allowLocationButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+        allowLocationButton.titleLabel?.font = UIFont.systemFont(ofSize: 12)
         allowLocationButton.setTitleColor(UIColor(red: 1, green: 1, blue: 1, alpha: 1), for: .normal)
         allowLocationButton.addTarget(self, action: #selector(allowButtonClicked), for:.touchUpInside)
 

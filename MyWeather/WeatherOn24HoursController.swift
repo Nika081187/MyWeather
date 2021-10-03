@@ -120,7 +120,7 @@ extension WeatherOn24HoursController: UITableViewDataSource {
         let dateString = dayTimePeriodFormatter1.string(from: date as Date)
         
         let dayTimePeriodFormatter2 = DateFormatter()
-        dayTimePeriodFormatter2.dateFormat = "hh : mm"
+        dayTimePeriodFormatter2.dateFormat = "HH : mm"
         let timeString = dayTimePeriodFormatter2.string(from: date as Date)
 
         cell.configure(date: dateString,

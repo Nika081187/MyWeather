@@ -34,9 +34,34 @@ class SettingsViewController: UIViewController {
         return label
     }()
     
+    private let cloud1Image: UIImageView = {
+        let theImageView = UIImageView()
+        theImageView.image = #imageLiteral(resourceName: "cloud1")
+        theImageView.contentMode = .scaleAspectFit
+        theImageView.toAutoLayout()
+        return theImageView
+    }()
+    
+    private let cloud2Image: UIImageView = {
+        let theImageView = UIImageView()
+        theImageView.image = #imageLiteral(resourceName: "cloud2")
+        theImageView.contentMode = .scaleAspectFit
+        theImageView.toAutoLayout()
+        return theImageView
+    }()
+    
+    private let cloud3Image: UIImageView = {
+        let theImageView = UIImageView()
+        theImageView.image = #imageLiteral(resourceName: "cloud3")
+        theImageView.contentMode = .scaleAspectFit
+        theImageView.toAutoLayout()
+        return theImageView
+    }()
+    
     private lazy var temperatureSwitch: UISwitch = {
         let switch1 = UISwitch()
         switch1.isOn = defaults.bool(forKey: "temperature")
+        switch1.onTintColor = UIColor(red: 0.125, green: 0.306, blue: 0.78, alpha: 1)
         switch1.toAutoLayout()
         return switch1
     }()
@@ -53,6 +78,7 @@ class SettingsViewController: UIViewController {
     private lazy var windSpeedSwitch: UISwitch = {
         let switch1 = UISwitch()
         switch1.isOn = defaults.bool(forKey: "windSpeed")
+        switch1.onTintColor = UIColor(red: 0.125, green: 0.306, blue: 0.78, alpha: 1)
         switch1.toAutoLayout()
         return switch1
     }()
@@ -69,6 +95,7 @@ class SettingsViewController: UIViewController {
     private lazy var timeFormatSwitch: UISwitch = {
         let switch1 = UISwitch()
         switch1.isOn = defaults.bool(forKey: "timeFormat")
+        switch1.onTintColor = UIColor(red: 0.125, green: 0.306, blue: 0.78, alpha: 1)
         switch1.toAutoLayout()
         return switch1
     }()
@@ -85,6 +112,7 @@ class SettingsViewController: UIViewController {
     private lazy var notificationSwitch: UISwitch = {
         let switch1 = UISwitch()
         switch1.isOn = defaults.bool(forKey: "notifications")
+        switch1.onTintColor = UIColor(red: 0.125, green: 0.306, blue: 0.78, alpha: 1)
         switch1.toAutoLayout()
         return switch1
     }()
@@ -145,6 +173,30 @@ class SettingsViewController: UIViewController {
         view.addSubview(notificationLabel)
         view.addSubview(notificationSwitch)
         view.addSubview(setSettingsButton)
+        view.addSubview(cloud1Image)
+        view.addSubview(cloud2Image)
+        view.addSubview(cloud3Image)
+        
+        cloud1Image.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(view).offset(20)
+            make.height.equalTo(100)
+            make.width.equalTo(200)
+            make.leading.equalTo(view)
+        }
+        
+        cloud3Image.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(cloud1Image).offset(50)
+            make.height.equalTo(100)
+            make.width.equalTo(200)
+            make.trailing.equalTo(view)
+        }
+        
+        cloud2Image.snp.makeConstraints { (make) -> Void in
+            make.bottom.equalTo(view).offset(-20)
+            make.height.equalTo(150)
+            make.width.equalTo(200)
+            make.centerX.equalTo(view)
+        }
         
         uiView.snp.makeConstraints { (make) -> Void in
             make.centerY.equalTo(view)

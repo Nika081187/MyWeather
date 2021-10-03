@@ -134,6 +134,10 @@ func updateWeatherDataMonthly(json: JSON) -> WeatherDatamodelMonthly? {
         day.windSpeed = item["wind_speed"].floatValue
         day.humidity = item["humidity"].intValue
         day.clouds = item["clouds"].intValue
+        day.weatherDescr = item["weather"][0]["description"].stringValue
+        day.moonset = item["moonset"].doubleValue
+        day.moonrise = item["moonrise"].doubleValue
+        day.sunset = item["sunset"].doubleValue
         res.days.append(day)
     }
 

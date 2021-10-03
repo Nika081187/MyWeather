@@ -52,6 +52,14 @@ class DayWithTemperature: UITableViewCell {
         return viewsLabel
     }()
     
+    private let humidityImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = #imageLiteral(resourceName: "humidity")
+        imageView.contentMode = .scaleAspectFit
+        imageView.toAutoLayout()
+        return imageView
+    }()
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupLayout()
@@ -67,6 +75,7 @@ class DayWithTemperature: UITableViewCell {
         contentView.addSubview(descriptionLabel)
         contentView.addSubview(dataLabel)
         contentView.addSubview(temperatureLabel)
+        contentView.addSubview(humidityImage)
         contentView.addSubview(humidityLabel)
         
         dataLabel.snp.makeConstraints { (make) -> Void in
@@ -76,11 +85,18 @@ class DayWithTemperature: UITableViewCell {
             make.width.equalTo(53)
         }
         
+        humidityImage.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(dataLabel.snp.bottom).offset(6)
+            make.leading.equalTo(contentView).offset(10)
+            make.height.equalTo(20)
+            make.width.equalTo(20)
+        }
+        
         humidityLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(dataLabel.snp.bottom).offset(6)
+            make.leading.equalTo(contentView).offset(30)
             make.height.equalTo(16)
             make.width.equalTo(30)
-            make.leading.equalTo(dataLabel)
         }
         
         descriptionLabel.snp.makeConstraints { (make) -> Void in

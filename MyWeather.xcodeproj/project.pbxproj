@@ -14,6 +14,7 @@
 		281550BC269B378600C0DC50 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 281550BA269B378600C0DC50 /* Main.storyboard */; };
 		281550BE269B378800C0DC50 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 281550BD269B378800C0DC50 /* Assets.xcassets */; };
 		281550C1269B378800C0DC50 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 281550BF269B378800C0DC50 /* LaunchScreen.storyboard */; };
+		282D291B2709F54100EBE3F2 /* MoonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 282D291A2709F54100EBE3F2 /* MoonView.swift */; };
 		284ACB6026C03975003D7BBD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281550B4269B378600C0DC50 /* AppDelegate.swift */; };
 		284ACB6126C03975003D7BBD /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281550B6269B378600C0DC50 /* SceneDelegate.swift */; };
 		284ACB6226C03975003D7BBD /* WeatherViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281550B8269B378600C0DC50 /* WeatherViewController.swift */; };
@@ -40,6 +41,7 @@
 		281550C0269B378800C0DC50 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		281550C2269B378800C0DC50 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		281550C9269B5CE700C0DC50 /* OnboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardViewController.swift; sourceTree = "<group>"; };
+		282D291A2709F54100EBE3F2 /* MoonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoonView.swift; sourceTree = "<group>"; };
 		2841161826A48E070049DB8C /* Location.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 		284ACAE926C03198003D7BBD /* WeatherDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDataModel.swift; sourceTree = "<group>"; };
 		284ACAF326C0351A003D7BBD /* ChangeCityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeCityViewController.swift; sourceTree = "<group>"; };
@@ -97,6 +99,7 @@
 				2814A3C426ED020500E901B3 /* WeatherOn24HoursCell.swift */,
 				284ACAF326C0351A003D7BBD /* ChangeCityViewController.swift */,
 				28C33B3326D80926005C130B /* SettingsViewController.swift */,
+				282D291A2709F54100EBE3F2 /* MoonView.swift */,
 				2814A3C126ECFF1600E901B3 /* WeatherOn24HoursController.swift */,
 				284ACAE926C03198003D7BBD /* WeatherDataModel.swift */,
 				281550BA269B378600C0DC50 /* Main.storyboard */,
@@ -241,6 +244,7 @@
 				284ACB6026C03975003D7BBD /* AppDelegate.swift in Sources */,
 				284ACB6126C03975003D7BBD /* SceneDelegate.swift in Sources */,
 				2814A39D26ECADD400E901B3 /* WeatherNetworking.swift in Sources */,
+				282D291B2709F54100EBE3F2 /* MoonView.swift in Sources */,
 				28C33B3426D80926005C130B /* SettingsViewController.swift in Sources */,
 				2814A3C226ECFF1600E901B3 /* WeatherOn24HoursController.swift in Sources */,
 				289BCFE326D69F010036B09C /* HourlyCollectionViewCell.swift in Sources */,

@@ -53,6 +53,9 @@ class Day {
     var humidity: Int = 0
     var clouds: Int = 0
     var weatherDescr: String = ""
+    var moonset: Double = 0
+    var moonrise: Double = 0
+    var sunset: Double = 0
 }
 
 class WeatherDatamodelMonthly {

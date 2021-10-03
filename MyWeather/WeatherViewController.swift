@@ -172,15 +172,16 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         let sunriseDate = NSDate(timeIntervalSince1970: weatherDataModelOneDay.sunrise)
         
         let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "hh:mm"
+        timeFormatter.dateFormat = "HH:mm"
         
         sunsetLabel.text = "\(timeFormatter.string(from: sunsetDate as Date))"
         sunriseLabel.text = "\(timeFormatter.string(from: sunriseDate as Date))"
         humidityLabel.text = "\(weatherDataModelOneDay.humidity)"
-        windSpeedLabel.text = "\(weatherDataModelOneDay.windSpeed)"
+        windSpeedLabel.text = "\(weatherDataModelOneDay.windSpeed) м/с"
+        cloudsLabel.text = "\(weatherDataModelOneDay.clouds)"
         let date = NSDate(timeIntervalSince1970: weatherDataModelOneDay.date)
         let dayTimePeriodFormatter = DateFormatter()
-        dayTimePeriodFormatter.dateFormat = "hh:mm, MMM dd"
+        dayTimePeriodFormatter.dateFormat = "HH:mm, EE dd MMMM"
         let dateString = dayTimePeriodFormatter.string(from: date as Date)
         dateLabel.text = dateString
         feelsLikeTemperatureLabel.text = "\(weatherDataModelOneDay.feelsLike)° / \(weatherDataModelOneDay.temperature)°"
@@ -267,7 +268,11 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         scrollView.addSubview(sunriseLabel)
         scrollView.addSubview(sunsetImage)
         scrollView.addSubview(sunriseImage)
+        scrollView.addSubview(cloudsLabel)
+        scrollView.addSubview(cloudsImage)
+        scrollView.addSubview(humidityImage)
         scrollView.addSubview(humidityLabel)
+        scrollView.addSubview(windSpeedImage)
         scrollView.addSubview(windSpeedLabel)
         scrollView.addSubview(dateLabel)
         
@@ -293,13 +298,14 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         
         locationButton.snp.makeConstraints { (make) -> Void in
             make.centerY.equalTo(cityLabel)
-            make.height.equalTo(40)
+            make.height.equalTo(30)
+            make.width.equalTo(20)
             make.trailing.equalTo(scrollView).offset(-15)
         }
         
         settingsButton.snp.makeConstraints { (make) -> Void in
             make.centerY.equalTo(cityLabel)
-            make.height.equalTo(40)
+            make.height.equalTo(50)
             make.leading.equalTo(scrollView).offset(15)
         }
         
@@ -363,10 +369,37 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
             make.centerX.equalTo(uiView)
         }
         
+        windSpeedImage.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(temperatureDescription.snp.bottom).offset(8)
+            make.height.equalTo(20)
+            make.width.equalTo(20)
+            make.trailing.equalTo(windSpeedLabel.snp.leading).offset(-6)
+        }
+        
+        cloudsLabel.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(temperatureDescription.snp.bottom).offset(8)
+            make.height.equalTo(20)
+            make.trailing.equalTo(windSpeedImage.snp.leading).offset(-6)
+        }
+        
+        cloudsImage.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(temperatureDescription.snp.bottom).offset(8)
+            make.height.equalTo(20)
+            make.width.equalTo(20)
+            make.trailing.equalTo(cloudsLabel.snp.leading).offset(-6)
+        }
+        
+        humidityImage.snp.makeConstraints { (make) -> Void in
+            make.top.equalTo(temperatureDescription.snp.bottom).offset(8)
+            make.height.equalTo(20)
+            make.width.equalTo(20)
+            make.leading.equalTo(windSpeedLabel.snp.trailing).offset(10)
+        }
+        
         humidityLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(temperatureDescription.snp.bottom).offset(8)
             make.height.equalTo(20)
-            make.leading.equalTo(windSpeedLabel.snp.trailing).offset(10)
+            make.leading.equalTo(humidityImage.snp.trailing).offset(6)
         }
         
         dateLabel.snp.makeConstraints { (make) -> Void in
@@ -407,14 +440,16 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         label.text = ""
         label.font = UIFont.boldSystemFont(ofSize: 36)
         label.textColor = .white
+        label.textAlignment = .center
         label.toAutoLayout()
         return label
     }()
-    
+
     private lazy var cityLabel: UILabel = {
         let label = UILabel()
         label.text = ""
         label.font = UIFont.boldSystemFont(ofSize: 18)
+        label.textAlignment = .center
         label.toAutoLayout()
         return label
     }()
@@ -423,7 +458,8 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         let button = UIButton()
         button.toAutoLayout()
         button.backgroundColor = .none
-        button.setImage(UIImage(systemName: "location.viewfinder"), for: .normal)
+        button.setImage(#imageLiteral(resourceName: "location"), for: .normal)
+        button.imageView?.contentMode = .scaleAspectFit
         button.addTarget(self, action: #selector(locationButtonClicked), for:.touchUpInside)
         return button
     }()
@@ -439,7 +475,8 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         let button = UIButton()
         button.toAutoLayout()
         button.backgroundColor = .none
-        button.setImage(UIImage(systemName: "list.dash"), for: .normal)
+        button.tintColor = .black
+        button.setImage(UIImage(systemName: "text.alignright"), for: .normal)
         button.addTarget(self, action: #selector(settingsButtonClicked), for:.touchUpInside)
         return button
     }()
@@ -456,6 +493,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         label.text = ""
         label.textColor = .white
         label.font = UIFont.systemFont(ofSize: 16)
+        label.textAlignment = .center
         label.toAutoLayout()
         return label
     }()
@@ -494,6 +532,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         label.text = ""
         label.textColor = .white
         label.font = UIFont.boldSystemFont(ofSize: 14)
+        label.textAlignment = .center
         label.toAutoLayout()
         return label
     }()
@@ -503,8 +542,28 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         label.text = ""
         label.textColor = .white
         label.font = UIFont.boldSystemFont(ofSize: 14)
+        label.textAlignment = .center
         label.toAutoLayout()
         return label
+    }()
+    
+    private lazy var cloudsLabel: UILabel = {
+        let label = UILabel()
+        label.text = ""
+        label.font = UIFont.boldSystemFont(ofSize: 14)
+        label.textColor = .white
+        label.textAlignment = .center
+        label.toAutoLayout()
+        return label
+    }()
+
+    private let cloudsImage: UIImageView = {
+        let theImageView = UIImageView()
+        theImageView.image = #imageLiteral(resourceName: "clouds2")
+        theImageView.tintColor = .yellow
+        theImageView.contentMode = .scaleAspectFit
+        theImageView.toAutoLayout()
+        return theImageView
     }()
     
     lazy var humidityLabel: UILabel = {
@@ -512,8 +571,18 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         label.text = ""
         label.textColor = .white
         label.font = UIFont.systemFont(ofSize: 14)
+        label.textAlignment = .center
         label.toAutoLayout()
         return label
+    }()
+
+    lazy var humidityImage: UIImageView = {
+        let theImageView = UIImageView()
+        theImageView.image = #imageLiteral(resourceName: "humidity2")
+        theImageView.tintColor = .yellow
+        theImageView.contentMode = .scaleAspectFit
+        theImageView.toAutoLayout()
+        return theImageView
     }()
 
     lazy var windSpeedLabel: UILabel = {
@@ -521,8 +590,18 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         label.text = ""
         label.textColor = .white
         label.font = UIFont.systemFont(ofSize: 14)
+        label.textAlignment = .center
         label.toAutoLayout()
         return label
+    }()
+    
+    lazy var windSpeedImage: UIImageView = {
+        let theImageView = UIImageView()
+        theImageView.image = #imageLiteral(resourceName: "windSpeed2")
+        theImageView.tintColor = .yellow
+        theImageView.contentMode = .scaleAspectFit
+        theImageView.toAutoLayout()
+        return theImageView
     }()
     
     lazy var dateLabel: UILabel = {
@@ -530,6 +609,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         label.text = ""
         label.textColor = UIColor(red: 0.965, green: 0.867, blue: 0.004, alpha: 1)
         label.font = UIFont.boldSystemFont(ofSize: 16)
+        label.textAlignment = .center
         label.toAutoLayout()
         return label
     }()
@@ -539,6 +619,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         label.text = ""
         label.textColor = .white
         label.font = UIFont.systemFont(ofSize: 16)
+        label.textAlignment = .center
         label.toAutoLayout()
         return label
     }()
@@ -707,7 +788,7 @@ extension WeatherViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("Выбрали день: \(indexPath.item + 1)")
-        let vc = DayWeatherViewController(weatherModel: weatherDatamodelMonthly, day: indexPath.item + 1, city: weatherDataModelOneDay.city)
+        let vc = DayWeatherViewController(weatherModel: weatherDatamodelMonthly, day: indexPath.item + 1, city: weatherDataModelOneDay.city, sunrise: weatherDataModelOneDay.sunrise)
         vc.modalPresentationStyle = .fullScreen
         present(vc, animated: true)
     }
