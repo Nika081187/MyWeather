@@ -55,35 +55,25 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         locationManager.delegate = self
         
         if let lat = defaults.value(forKey: "lat"), let lon = defaults.value(forKey: "lon") {
-            print("11111")
-            let params: [String : String] = ["lat": "\(lat)", "lon": "\(lon)", "appid": api_key]
 
+            let params: [String : String] = ["lat": "\(lat)", "lon": "\(lon)", "appid": api_key]
             getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params) {  weather in
-                print("======88")
                 if let weatherDataModel = weather {
-                    print("======888")
                     defaults.set(weatherDataModel.lat, forKey: "lat")
                     defaults.set(weatherDataModel.lon, forKey: "lon")
-                    // check if need
                     self.weatherDataModelOneDay = weatherDataModel
                     self.updateUIWithWeatherData()
                 }
             }
             getWeatherDataMonthly(url: WEATHER_URL_MOUNTH, parameters: params) {  weather in
-                print("======9")
                 if let weatherDataModel = weather {
-                    print("======999")
-                    // check if need
                     self.weatherDatamodelMonthly = weatherDataModel
                     self.updateTableData()
                 }
             }
             
             getWeatherDataHourly(url: WEATHER_URL_HOURLY, parameters: params) {  weather in
-                print("======10")
                 if let weatherDataModel = weather {
-                    print("======101010")
-                    // check if need
                     self.weatherDataModelHourly = weatherDataModel
                     self.updateCollectionViewData()
                 }
@@ -97,13 +87,13 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         hourlyCollectionView.allowsMultipleSelection = false
         
         temperatureTable.toAutoLayout()
+        temperatureTable.showsVerticalScrollIndicator = false
         temperatureTable.dataSource = self
         temperatureTable.delegate = self
         temperatureTable.register(DayWithTemperature.self, forCellReuseIdentifier: reuseId)
 
         view.backgroundColor = .white
         configure()
-        print("3")
     }
     
     override func viewDidLayoutSubviews() {
@@ -142,16 +132,12 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        print("4")
         if let _ = defaults.value(forKey: "lat"), let _ = defaults.value(forKey: "lon") {
-            print("5")
             return
         }
-        print("6")
         
         if status != .notDetermined || !weatherDataModelOneDay.city.isEmpty {
             updateUIWithWeatherData()
-            print("7")
         } else if Core.shared.isNewUser() {
             print("Показываем онбординг новому пользователю")
             let vc = OnboardViewController()
@@ -166,12 +152,14 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     func updateUIWithWeatherData() {
         cityLabel.text = weatherDataModelOneDay.city
         temperatureLabel.text = "\(weatherDataModelOneDay.temperature)°"
-        temperatureDescription.text = weatherDataModelOneDay.temperatureDescription.capitalizingFirstLetter()
+        let locDescr = Localization.localizedString(key: weatherDataModelOneDay.temperatureDescription)
+        temperatureDescription.text = locDescr.capitalizingFirstLetter()
         
         let sunsetDate = NSDate(timeIntervalSince1970: weatherDataModelOneDay.sunset)
         let sunriseDate = NSDate(timeIntervalSince1970: weatherDataModelOneDay.sunrise)
         
         let timeFormatter = DateFormatter()
+        timeFormatter.locale = Locale(identifier: "ru_RU")
         timeFormatter.dateFormat = "HH:mm"
         
         sunsetLabel.text = "\(timeFormatter.string(from: sunsetDate as Date))"
@@ -181,6 +169,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         cloudsLabel.text = "\(weatherDataModelOneDay.clouds)"
         let date = NSDate(timeIntervalSince1970: weatherDataModelOneDay.date)
         let dayTimePeriodFormatter = DateFormatter()
+        dayTimePeriodFormatter.locale = Locale(identifier: "ru_RU")
         dayTimePeriodFormatter.dateFormat = "HH:mm, EE dd MMMM"
         let dateString = dayTimePeriodFormatter.string(from: date as Date)
         dateLabel.text = dateString
@@ -218,33 +207,23 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
             let longitude = String(location.coordinate.longitude)
             
             let params: [String : String] = ["lat": latitude, "lon": longitude, "appid": api_key]
-            print("======8")
             getWeatherDataOnOneDay(url: WEATHER_URL_ONE_DAY, parameters: params) {  weather in
-                print("======88")
                 if let weatherDataModel = weather {
-                    print("======888")
                     defaults.set(weatherDataModel.lat, forKey: "lat")
                     defaults.set(weatherDataModel.lon, forKey: "lon")
-                    // check if need
                     self.weatherDataModelOneDay = weatherDataModel
                     self.updateUIWithWeatherData()
                 }
             }
             getWeatherDataMonthly(url: WEATHER_URL_MOUNTH, parameters: params) {  weather in
-                print("======9")
                 if let weatherDataModel = weather {
-                    print("======999")
-                    // check if need
                     self.weatherDatamodelMonthly = weatherDataModel
                     self.updateTableData()
                 }
             }
             
             getWeatherDataHourly(url: WEATHER_URL_HOURLY, parameters: params) {  weather in
-                print("======10")
                 if let weatherDataModel = weather {
-                    print("======101010")
-                    // check if need
                     self.weatherDataModelHourly = weatherDataModel
                     self.updateCollectionViewData()
                 }
@@ -254,6 +233,9 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     func configure() {
         view.addSubview(scrollView)
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+
         scrollView.addSubview(uiView)
         scrollView.addSubview(cityLabel)
 
@@ -648,7 +630,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         label.frame = CGRect(x: 0, y: 0, width: 200, height: 22)
         label.backgroundColor = .white
         label.textColor = UIColor(red: 0.154, green: 0.152, blue: 0.135, alpha: 1)
-        label.font = UIFont(name: "Rubik-Medium", size: 18)
+        label.font = UIFont.boldSystemFont(ofSize: 18)
 
         var paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineHeightMultiple = 1.03
@@ -712,7 +694,7 @@ extension WeatherViewController: UICollectionViewDataSource {
         
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
-        
+        timeFormatter.locale = Locale(identifier: "ru_RU")
         let hour = "\(timeFormatter.string(from: Date(timeIntervalSince1970: weatherDataModelHourly.hourly[sectionNumber].date)))"
 
         cell.configure(image: image, temperature: weatherDataModelHourly.hourly[sectionNumber].temperature, hour: "\(hour)")
@@ -750,14 +732,14 @@ extension WeatherViewController: UITableViewDataSource {
         }
         
         let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "dd.MM"
-        
+        timeFormatter.dateFormat = "dd/MM"
+        timeFormatter.locale = Locale(identifier: "ru_RU")
         let data = "\(timeFormatter.string(from: Date(timeIntervalSince1970: weatherDatamodelMonthly.days[indexPath.section].date)))"
-        
-        cell.configure(description: "\(weatherDatamodelMonthly.days[indexPath.section].weatherDescr.capitalizingFirstLetter())",
+        let locDescr = Localization.localizedString(key: weatherDatamodelMonthly.days[indexPath.section].weatherDescr)
+        cell.configure(description: "\(locDescr.capitalizingFirstLetter())",
                        data: data,
                        humidity: weatherDatamodelMonthly.days[indexPath.section].humidity,
-                       temperature: "\(weatherDatamodelMonthly.days[indexPath.section].temperatureDay)°")
+                       temperature: "\(weatherDatamodelMonthly.days[indexPath.section].temperatureDay)° >")
         return cell
     }
 }

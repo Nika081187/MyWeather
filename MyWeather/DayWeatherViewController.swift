@@ -36,6 +36,7 @@ class DayWeatherViewController: UIViewController {
         let label = UILabel()
         label.text = ""
         label.font = UIFont.boldSystemFont(ofSize: 18)
+        label.textAlignment = .center
         label.toAutoLayout()
         return label
     }()
@@ -51,7 +52,7 @@ class DayWeatherViewController: UIViewController {
     lazy var dayTimeLabel: UILabel = {
         let label = UILabel()
         label.textColor = .black
-        label.font = UIFont.boldSystemFont(ofSize: 18)
+        label.font = UIFont.systemFont(ofSize: 18)
         label.toAutoLayout()
         return label
     }()
@@ -67,7 +68,7 @@ class DayWeatherViewController: UIViewController {
     lazy var nightTimeLabel: UILabel = {
         let label = UILabel()
         label.textColor = .black
-        label.font = UIFont.boldSystemFont(ofSize: 18)
+        label.font = UIFont.systemFont(ofSize: 18)
         label.toAutoLayout()
         return label
     }()
@@ -96,6 +97,9 @@ class DayWeatherViewController: UIViewController {
         view.backgroundColor = .white
         
         view.addSubview(scrollView)
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+
         scrollView.addSubview(backButton)
         scrollView.addSubview(cityLabel)
         scrollView.addSubview(dayUiView)
@@ -121,8 +125,8 @@ class DayWeatherViewController: UIViewController {
         cityLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(backButton.snp.bottom).offset(15)
             make.height.equalTo(20)
-            make.width.equalTo(150)
             make.leading.equalTo(scrollView).offset(15)
+            make.trailing.equalTo(scrollView).offset(-15)
         }
         
         addDayView()
@@ -147,7 +151,7 @@ class DayWeatherViewController: UIViewController {
         
         dayUiView.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(scrollView).offset(110)
-            make.height.equalTo(341)
+            make.height.equalTo(300)
             make.centerX.equalTo(scrollView)
             make.width.equalTo(scrollView).offset(-30)
         }
@@ -165,7 +169,7 @@ class DayWeatherViewController: UIViewController {
         
         nightUiView.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(dayUiView.snp.bottom).offset(12)
-            make.height.equalTo(341)
+            make.height.equalTo(300)
             make.centerX.equalTo(scrollView)
             make.width.equalTo(scrollView).offset(-30)
         }
@@ -201,14 +205,17 @@ class DayWeatherViewController: UIViewController {
         // Описание
         let temperatureDescriptionLabel = UILabel()
         temperatureDescriptionLabel.toAutoLayout()
-        temperatureDescriptionLabel.font = UIFont.systemFont(ofSize: 18)
-        temperatureDescriptionLabel.text = "\(weatherDataModel.days[dayNumber].weatherDescr)"
+        temperatureDescriptionLabel.font = UIFont.boldSystemFont(ofSize: 18)
+        temperatureDescriptionLabel.textAlignment = .center
+        let locDescr = Localization.localizedString(key: weatherDataModel.days[dayNumber].weatherDescr)
+        temperatureDescriptionLabel.text = "\(locDescr.capitalizingFirstLetter())"
         scrollView.addSubview(temperatureDescriptionLabel)
         
         temperatureDescriptionLabel.snp.makeConstraints { (make) -> Void in
             make.top.equalTo(temperatureLabel.snp.bottom).offset(11)
             make.height.equalTo(22)
-            make.width.equalTo(100)
+            make.leading.equalTo(view).offset(15)
+            make.trailing.equalTo(view).offset(-15)
             make.centerX.equalTo(scrollView)
         }
         
@@ -320,6 +327,7 @@ class DayWeatherViewController: UIViewController {
         let feelsLikeValueLabel = UILabel()
         feelsLikeValueLabel.toAutoLayout()
         feelsLikeValueLabel.font = UIFont.systemFont(ofSize: 14)
+        feelsLikeLabel.textAlignment = .right
         if viewToTheDay.accessibilityIdentifier!.contains("day") {
             feelsLikeValueLabel.text = "\(weatherDataModel.days[dayNumber].feelsLikeDay)°"
         } else {
@@ -338,6 +346,7 @@ class DayWeatherViewController: UIViewController {
         // Ветер Value
         let windSpeedValueLabel = UILabel()
         windSpeedValueLabel.toAutoLayout()
+        windSpeedValueLabel.textAlignment = .right
         windSpeedValueLabel.font = UIFont.systemFont(ofSize: 14)
         windSpeedValueLabel.text = "\(weatherDataModel.days[dayNumber].windSpeed) m\\s"
         
@@ -354,6 +363,7 @@ class DayWeatherViewController: UIViewController {
         let humidityValueLabel = UILabel()
         humidityValueLabel.toAutoLayout()
         humidityValueLabel.font = UIFont.systemFont(ofSize: 14)
+        humidityValueLabel.textAlignment = .right
         humidityValueLabel.text = "\(weatherDataModel.days[dayNumber].humidity) %"
         scrollView.addSubview(humidityValueLabel)
         
@@ -368,6 +378,7 @@ class DayWeatherViewController: UIViewController {
         let cloudsValueLabel = UILabel()
         cloudsValueLabel.toAutoLayout()
         cloudsValueLabel.font = UIFont.systemFont(ofSize: 14)
+        cloudsValueLabel.textAlignment = .right
         cloudsValueLabel.text = "\(weatherDataModel.days[dayNumber].clouds) %"
         scrollView.addSubview(cloudsValueLabel)
         

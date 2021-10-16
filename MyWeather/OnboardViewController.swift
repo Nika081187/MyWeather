@@ -120,6 +120,9 @@ class OnboardViewController: UIViewController, CLLocationManagerDelegate {
     private func configure() {
         view.addSubview(scrollView)
         scrollView.addSubview(scrollViewContainer)
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+        
         imageView.toAutoLayout()
         labelText1.toAutoLayout()
         labelText2.toAutoLayout()

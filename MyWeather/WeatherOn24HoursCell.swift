@@ -74,6 +74,7 @@ class WeatherOn24HoursCell: UITableViewCell {
         let label = UILabel()
         label.toAutoLayout()
         label.font = UIFont.systemFont(ofSize: 14)
+        label.textAlignment = .right
         label.text = ""
         label.textColor = .gray
         return label
@@ -103,6 +104,7 @@ class WeatherOn24HoursCell: UITableViewCell {
         label.toAutoLayout()
         label.font = UIFont.systemFont(ofSize: 14)
         label.text = ""
+        label.textAlignment = .right
         label.textColor = .gray
         return label
     }()
@@ -131,6 +133,7 @@ class WeatherOn24HoursCell: UITableViewCell {
         label.toAutoLayout()
         label.font = UIFont.systemFont(ofSize: 14)
         label.text = ""
+        label.textAlignment = .right
         label.textColor = .gray
         return label
     }()
@@ -159,6 +162,7 @@ class WeatherOn24HoursCell: UITableViewCell {
         label.toAutoLayout()
         label.font = UIFont.systemFont(ofSize: 14)
         label.text = ""
+        label.textAlignment = .right
         label.textColor = .gray
         return label
     }()

@@ -19,29 +19,30 @@ class DayWithTemperature: UITableViewCell {
     }
 
     private lazy var descriptionLabel: UILabel = {
-        let nameLabel = UILabel()
-        nameLabel.toAutoLayout()
-        nameLabel.textColor = .black
-        nameLabel.font = UIFont.systemFont(ofSize: 16)
-        nameLabel.numberOfLines = 2
-        return nameLabel
+        let label = UILabel()
+        label.toAutoLayout()
+        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 16)
+        label.numberOfLines = 2
+        return label
     }()
     
     private lazy var dataLabel: UILabel = {
-        let descriptionLabel = UILabel()
-        descriptionLabel.toAutoLayout()
-        descriptionLabel.textColor = .gray
-        descriptionLabel.font = UIFont.systemFont(ofSize: 16)
-        descriptionLabel.numberOfLines = 0
-        return descriptionLabel
+        let dataLabel = UILabel()
+        dataLabel.toAutoLayout()
+        dataLabel.textColor = .gray
+        dataLabel.font = UIFont.systemFont(ofSize: 16)
+        dataLabel.numberOfLines = 0
+        return dataLabel
     }()
     
     private lazy var humidityLabel: UILabel = {
-        let likesLabel = UILabel()
-        likesLabel.toAutoLayout()
-        likesLabel.textColor = .black
-        likesLabel.font = UIFont.systemFont(ofSize: 12)
-        return likesLabel
+        let label = UILabel()
+        label.toAutoLayout()
+        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textColor = UIColor(red: 0.125, green: 0.306, blue: 0.78, alpha: 1)
+        return label
     }()
     
     private lazy var temperatureLabel: UILabel = {

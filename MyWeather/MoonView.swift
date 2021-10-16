@@ -137,6 +137,7 @@ class MoonView: UIView {
         
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
+        timeFormatter.locale = Locale(identifier: "ru_RU")
         
         self.weatherDatamodel = weatherDatamodel
         self.sunsetSunValue.text = "\(timeFormatter.string(from: Date(timeIntervalSince1970: weatherDatamodel.sunset)))"
@@ -146,7 +147,7 @@ class MoonView: UIView {
         
         let timeFormatter2 = DateFormatter()
         timeFormatter2.dateFormat = "HH ч mm мин"
-        
+        timeFormatter2.locale = Locale(identifier: "ru_RU")
         let sunTime = weatherDatamodel.sunset - sunrise
         let moonTime = weatherDatamodel.moonset - weatherDatamodel.moonrise
         

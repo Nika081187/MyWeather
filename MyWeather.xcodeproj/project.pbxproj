@@ -22,6 +22,8 @@
 		284ACB6426C03975003D7BBD /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2841161826A48E070049DB8C /* Location.swift */; };
 		284ACB6526C03975003D7BBD /* ChangeCityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284ACAF326C0351A003D7BBD /* ChangeCityViewController.swift */; };
 		284ACB6726C03975003D7BBD /* WeatherDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284ACAE926C03198003D7BBD /* WeatherDataModel.swift */; };
+		288D52AB271B06B500D49C9F /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 288D52AA271B06B500D49C9F /* Localization.swift */; };
+		288D52B4271B085D00D49C9F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 288D52B6271B085D00D49C9F /* Localizable.strings */; };
 		289BCFE326D69F010036B09C /* HourlyCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289BCFE226D69F010036B09C /* HourlyCollectionViewCell.swift */; };
 		28C33B3126D6C664005C130B /* DayWithTemperature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28C33B3026D6C664005C130B /* DayWithTemperature.swift */; };
 		28C33B3426D80926005C130B /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28C33B3326D80926005C130B /* SettingsViewController.swift */; };
@@ -45,6 +47,8 @@
 		2841161826A48E070049DB8C /* Location.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 		284ACAE926C03198003D7BBD /* WeatherDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDataModel.swift; sourceTree = "<group>"; };
 		284ACAF326C0351A003D7BBD /* ChangeCityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeCityViewController.swift; sourceTree = "<group>"; };
+		288D52AA271B06B500D49C9F /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
+		288D52B8271B089200D49C9F /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		289BCFE226D69F010036B09C /* HourlyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HourlyCollectionViewCell.swift; sourceTree = "<group>"; };
 		28C33B3026D6C664005C130B /* DayWithTemperature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayWithTemperature.swift; sourceTree = "<group>"; };
 		28C33B3326D80926005C130B /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
@@ -101,7 +105,9 @@
 				28C33B3326D80926005C130B /* SettingsViewController.swift */,
 				282D291A2709F54100EBE3F2 /* MoonView.swift */,
 				2814A3C126ECFF1600E901B3 /* WeatherOn24HoursController.swift */,
+				288D52B6271B085D00D49C9F /* Localizable.strings */,
 				284ACAE926C03198003D7BBD /* WeatherDataModel.swift */,
+				288D52AA271B06B500D49C9F /* Localization.swift */,
 				281550BA269B378600C0DC50 /* Main.storyboard */,
 				281550BD269B378800C0DC50 /* Assets.xcassets */,
 				281550BF269B378800C0DC50 /* LaunchScreen.storyboard */,
@@ -170,6 +176,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ru,
 			);
 			mainGroup = 281550A8269B378600C0DC50;
 			productRefGroup = 281550B2269B378600C0DC50 /* Products */;
@@ -187,6 +194,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				281550C1269B378800C0DC50 /* LaunchScreen.storyboard in Resources */,
+				288D52B4271B085D00D49C9F /* Localizable.strings in Resources */,
 				281550BE269B378800C0DC50 /* Assets.xcassets in Resources */,
 				281550BC269B378600C0DC50 /* Main.storyboard in Resources */,
 			);
@@ -247,6 +255,7 @@
 				282D291B2709F54100EBE3F2 /* MoonView.swift in Sources */,
 				28C33B3426D80926005C130B /* SettingsViewController.swift in Sources */,
 				2814A3C226ECFF1600E901B3 /* WeatherOn24HoursController.swift in Sources */,
+				288D52AB271B06B500D49C9F /* Localization.swift in Sources */,
 				289BCFE326D69F010036B09C /* HourlyCollectionViewCell.swift in Sources */,
 				284ACB6226C03975003D7BBD /* WeatherViewController.swift in Sources */,
 				284ACB6326C03975003D7BBD /* OnboardViewController.swift in Sources */,
@@ -278,6 +287,14 @@
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
+		288D52B6271B085D00D49C9F /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				288D52B8271B089200D49C9F /* ru */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
@@ -285,6 +302,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -346,6 +364,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
