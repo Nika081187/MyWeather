@@ -14,6 +14,8 @@ class WeatherOn24HoursController: UIViewController {
     
     private let temperatureTable = UITableView(frame: .infinite, style: .plain)
     private var city: String
+    private var hours = [String]()
+    weak var axisFormatDelegate: IAxisValueFormatter?
     
     private var reuseId: String {
         String(describing: WeatherOn24HoursCell.self)
@@ -72,6 +74,7 @@ class WeatherOn24HoursController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        axisFormatDelegate = self
         
         temperatureTable.toAutoLayout()
         temperatureTable.dataSource = self
@@ -79,7 +82,7 @@ class WeatherOn24HoursController: UIViewController {
         temperatureTable.allowsSelection = false
         temperatureTable.register(WeatherOn24HoursCell.self, forCellReuseIdentifier: reuseId)
         temperatureTable.showsVerticalScrollIndicator = false
-        
+
         cityLabel.text = city
 
         view.addSubview(scrollView)
@@ -88,23 +91,23 @@ class WeatherOn24HoursController: UIViewController {
         scrollView.addSubview(chartView)
         scrollView.addSubview(temperatureTable)
         
-        var daysArray = [String]()
         var tempArray = [Double]()
         var humidArray = [Double]()
-        weatherDataModel.hourly.forEach { i in
-            
-            let date = NSDate(timeIntervalSince1970: i.date)
-            let dayTimePeriodFormatter1 = DateFormatter()
-            dayTimePeriodFormatter1.locale = Locale(identifier: "ru_RU")
-            dayTimePeriodFormatter1.dateFormat = "MMM / dd"
-            let dateString = dayTimePeriodFormatter1.string(from: date as Date)
-            
-            daysArray.append(dateString)
-            tempArray.append(Double(i.temperature))
-            humidArray.append(Double(i.humidity))
+        for i in 0..<weatherDataModel.hourly.count {
+            if i % 3 == 0 {
+                let date = NSDate(timeIntervalSince1970: weatherDataModel.hourly[i].date)
+                let dayTimePeriodFormatter1 = DateFormatter()
+                dayTimePeriodFormatter1.locale = Locale(identifier: "ru_RU")
+                dayTimePeriodFormatter1.dateFormat = "HH:00"
+                let dateString = dayTimePeriodFormatter1.string(from: date as Date)
+                
+                hours.append(dateString)
+                tempArray.append(Double(weatherDataModel.hourly[i].temperature))
+                humidArray.append(Double(weatherDataModel.hourly[i].humidity))
+            }
         }
-        
-        customizeChart(dataPoints: daysArray, tempValues: tempArray, humidValues: humidArray)
+
+        customizeChart(dataPoints: hours, tempValues: tempArray, humidValues: humidArray)
         
         setupLayout()
     }
@@ -113,11 +116,10 @@ class WeatherOn24HoursController: UIViewController {
         
         var tempPoints: [ChartDataEntry] = []
         var humidPoints: [ChartDataEntry] = []
-        var hoursPoints: [ChartDataEntry] = []
-        for count in (0..<dataPoints.count / 3) {
+
+        for count in (0..<dataPoints.count) {
             tempPoints.append(ChartDataEntry.init(x: Double(count), y: tempValues[count]))
             humidPoints.append(ChartDataEntry.init(x: Double(count), y: humidValues[count], icon: #imageLiteral(resourceName: "humid_little")))
-            hoursPoints.append(ChartDataEntry.init(x: Double(count), y: 5))
         }
 
         let temprSet = LineChartDataSet(entries: tempPoints, label: nil)
@@ -133,26 +135,28 @@ class WeatherOn24HoursController: UIViewController {
         humidSet.setColor(.systemBlue)
         humidSet.setCircleColor(.white)
         
-        let hoursSet = LineChartDataSet(entries: hoursPoints, label: nil)
-        hoursSet.lineWidth = 0.5
-        hoursSet.circleRadius = 2
-        hoursSet.setColor(.blue)
-        hoursSet.setCircleColor(.blue)
-        
-        let dataSets = [temprSet, humidSet, hoursSet]
+        let dataSets = [temprSet, humidSet]
         let data = LineChartData(dataSets: dataSets)
-        data.setValueFont(.systemFont(ofSize: 7, weight: .light))
+        data.setValueFont(.systemFont(ofSize: 10, weight: .light))
         chartView.backgroundColor = UIColor(red: 0.914, green: 0.933, blue: 0.98, alpha: 1)
         chartView.data = data
         chartView.chartDescription?.enabled = false
+        
         chartView.xAxis.drawGridLinesEnabled = false
-        chartView.xAxis.drawLabelsEnabled = false
         chartView.xAxis.drawAxisLineEnabled = false
+
+        let xAxisValue = chartView.xAxis
+        xAxisValue.valueFormatter = axisFormatDelegate
+        xAxisValue.labelPosition = .bottom
+        xAxisValue.labelFont = UIFont.systemFont(ofSize: 10)
+
         chartView.rightAxis.enabled = false
         chartView.leftAxis.enabled = false
         chartView.drawBordersEnabled = false
         chartView.legend.form = .none
         chartView.isUserInteractionEnabled = false
+        chartView.layoutMargins = .init(top: 0, left: 20, bottom: 0, right: 20)
+        chartView.minOffset = 20
     }
     
     func setupLayout() {
@@ -187,6 +191,12 @@ class WeatherOn24HoursController: UIViewController {
             make.trailing.equalTo(view)
             make.bottom.equalTo(view)
         }
+    }
+}
+
+extension WeatherOn24HoursController: IAxisValueFormatter {
+    func stringForValue(_ value: Double, axis: AxisBase?) -> String {
+        return hours[Int(value)]
     }
 }
 
